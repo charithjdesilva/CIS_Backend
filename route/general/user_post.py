@@ -84,3 +84,6 @@ def post_queries(Name : Annotated[str, Form()], Email : Annotated[EmailStr, Form
 
 
 
+
+
+
