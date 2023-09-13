@@ -1,7 +1,7 @@
 from typing import List,Annotated
 from fastapi import APIRouter,Path,HTTPException,status
 from dummydata import users
-from schemas import UserOut
+from schemas import UserBase
 
 router = APIRouter(
     prefix="/it-officer",
@@ -23,6 +23,6 @@ def search_user(search : Annotated[str, Path()]):
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{search} id is not found on the database")
 
 
-@router.get("/user-details",response_model=List[UserOut])
+@router.get("/user-details",response_model=List[UserBase])
 def show_user_details():
     return users

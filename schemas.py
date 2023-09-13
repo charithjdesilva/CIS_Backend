@@ -1,3 +1,4 @@
+from fastapi import File,UploadFile
 from pydantic import BaseModel
 from typing import Annotated
 
@@ -5,10 +6,11 @@ from typing import Annotated
 
 
 
+class Image(BaseModel):
+    url : str
+    name : str
 
-    
-
-class UserOut(BaseModel):
+class UserBase(BaseModel):
     Reg_No : str
     NIC : str
     First_Name : str
@@ -16,9 +18,19 @@ class UserOut(BaseModel):
     Tel_No : str
     Province : str
     City : str
-    Area : str
+    Area : str | None = None
     Address : str
     Branch : str
     Position : str
     Join_Date : str
-    photo_of_criminal : list[str]
+    photo_of_criminal : Image | None = None
+
+
+# class UserOut(UserIn):
+#     pass
+
+
+
+
+# class Images(BaseModel):
+#     photo_of_criminal : Annotated[list[UploadFile], File()]
