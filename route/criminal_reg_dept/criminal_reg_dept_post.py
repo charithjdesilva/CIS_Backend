@@ -5,7 +5,7 @@ import smtplib
 # from secret123 import sender,receiver,password
 from typing import Annotated
 from Security.password import is_valid_password
-
+from fastapi import UploadFile
 
 
 router = APIRouter(
@@ -16,3 +16,9 @@ router = APIRouter(
 @router.get("/hello")
 def hello():
     return {"message" : "hello world"}
+
+@router.post("/identify-criminal")
+def identifyCriminal(file: UploadFile = File(...)):
+    # run facial recognition
+    
+    pass
