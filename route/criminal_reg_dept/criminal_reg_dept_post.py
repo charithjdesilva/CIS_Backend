@@ -17,8 +17,8 @@ router = APIRouter(
 def hello():
     return {"message" : "hello world"}
 
-@router.post("/identify-criminal")
-def identifyCriminal(file: UploadFile = File(...)):
-    # run facial recognition
+# @router.post("/identify-criminal")
+# def identifyCriminal(file: UploadFile = File(...)):
+#     # run facial recognition
     
-    pass
+#     pass
