@@ -6,6 +6,36 @@ import face_recognition
 import os
 from datetime import datetime
 
+# Initial image encoding function
+def encodeImages():
+    path = 'Suspects'
+    images = []
+
+    # create a list of names from a images inside the folder
+    imageNames = []
+
+    # first we will grab the list of images inside the image folder
+    imagesList = os.listdir(path)
+    print(imagesList)
+
+    # use the names of imagesList to import images one by one
+    for imgName in imagesList:
+        currentImg = cv2.imread(f'{path}/{imgName}')    # read image and save it to currentImg
+        images.append(currentImg)    # append current image to images list
+        imageNames.append(os.path.splitext(imgName)[0])    # also append imageNames, we only need the name not with file extension
+    print(imageNames)
+
+# find the encodings of the images
+def findEncodings(images):
+    encodeList = []    # a list to save all the encoded images
+
+    # loop through all the images
+    for img in images:
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # convert image to RGB
+        encodeOfImg = face_recognition.face_encodings(img)[0]    # find encoding of the image
+        encodeList.append(encodeOfImg)  # append the encode value to the encodeList
+    return encodeList
+
 def recognizeFace(image):
     img = Image.open(image)
     # we are reducing the image size because it will help us by speeding the process
