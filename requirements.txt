@@ -11,3 +11,4 @@ pytest
 jinja2
 websockets
 email-validator
+face_recognition

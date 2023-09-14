@@ -1,70 +1,141 @@
 from PIL import Image
-# from io import BytesIO
 import cv2
 import numpy as np
 import face_recognition
 import os
 from datetime import datetime
+import pickle
+
+# Initialize a dictionary to store image filenames and their corresponding encodings
+image_encodings = {}
+# Initialize a set to keep track of processed image names
+processed_image_names = set()
+# Initialize a list to store image filenames
+imageNames = []
+
+# Function to add a new image to the imageNames list
+def addImageName(imgName):
+    # Append the new image name to imageNames
+    imageNames.append(os.path.splitext(imgName)[0])
 
 # Initial image encoding function
-def encodeImages():
-    path = 'Suspects'
-    images = []
+def encodeImages(new_image_path):
+    # Load existing image encodings
+    image_encodings = loadImageEncodings('image_encodings.pkl')
 
-    # create a list of names from a images inside the folder
-    imageNames = []
+    # Load the new image using the provided path
+    currentImg = cv2.imread(new_image_path)
 
-    # first we will grab the list of images inside the image folder
-    imagesList = os.listdir(path)
-    print(imagesList)
+    # Find the encoding of the new image
+    imgName = os.path.splitext(os.path.basename(new_image_path))[0]
+    img = cv2.cvtColor(currentImg, cv2.COLOR_BGR2RGB)
+    encodeOfImg = face_recognition.face_encodings(img)[0]
 
-    # use the names of imagesList to import images one by one
-    for imgName in imagesList:
-        currentImg = cv2.imread(f'{path}/{imgName}')    # read image and save it to currentImg
-        images.append(currentImg)    # append current image to images list
-        imageNames.append(os.path.splitext(imgName)[0])    # also append imageNames, we only need the name not with file extension
-    print(imageNames)
+    # Check if the image already exists in the dictionary
+    if imgName in image_encodings:
+        print(f"Image {imgName} already exists in the dictionary. Skipping.")
+    else:
+        # Add the new encoding to the dictionary
+        image_encodings[imgName] = encodeOfImg
 
-# find the encodings of the images
-def findEncodings(images):
-    encodeList = []    # a list to save all the encoded images
+        # Save the updated image encodings to a file
+        saveImageEncodings(image_encodings, 'image_encodings.pkl')
 
-    # loop through all the images
-    for img in images:
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # convert image to RGB
-        encodeOfImg = face_recognition.face_encodings(img)[0]    # find encoding of the image
-        encodeList.append(encodeOfImg)  # append the encode value to the encodeList
+        # Save the new encoding to the encodeList
+        saveEncodeList([encodeOfImg], 'encodeList.pkl')
+
+def findEncodings(images, imageNames):
+    encodeList = []
+
+    for img, imgName in zip(images, imageNames):
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        encodeOfImg = face_recognition.face_encodings(img)[0]
+        encodeList.append(encodeOfImg)
+
+        # Store the encoding along with the image filename in the dictionary
+        image_encodings[imgName] = encodeOfImg
+
+    # Save the updated image encodings dictionary
+    saveImageEncodings(image_encodings, 'image_encodings.pkl')
+
+    # Save the updated encodeList
+    saveEncodeList(encodeList, 'encodeList.pkl')
+
+
+# Function to save the encodeList to a file (append mode)
+def saveEncodeList(encodeList, file_name):
+    # Load existing encodings from the file, if any
+    existing_encodings = []
+    try:
+        with open(file_name, 'rb') as file:
+            existing_encodings = pickle.load(file)
+    except FileNotFoundError:
+        pass  # Ignore if the file doesn't exist yet
+
+    # Append the new encodings to the existing ones
+    existing_encodings.extend(encodeList)
+
+    # Save the updated encodings to the file
+    with open(file_name, 'wb') as file:
+        pickle.dump(existing_encodings, file)
+
+# Function to save the image_encodings dictionary to a file
+def saveImageEncodings(encodings, file_name):
+    with open(file_name, 'wb') as file:
+        pickle.dump(encodings, file)
+
+# Loading the encodeList from a file
+def loadEncodeList(file_name):
+    with open(file_name, 'rb') as file:
+        encodeList = pickle.load(file)
     return encodeList
 
-def recognizeFace(image):
-    img = Image.open(image)
-    # we are reducing the image size because it will help us by speeding the process
-    imgSmall = cv2.resize(img, (0,0), None, 0.25, 0.25)     # small image will be 1/4 th of the size
-    imgSmall = cv2.cvtColor(imgSmall, cv2.COLOR_BGR2RGB)    # convert to RGB
+# Function to load existing image encodings from a file
+def loadImageEncodings(file_name):
+    try:
+        with open(file_name, 'rb') as file:
+            encodings = pickle.load(file)
+        return encodings
+    except FileNotFoundError:
+        return {}
 
-    # in an image we may find multiple faces, so we are first find the location of the faces
-    faceLocation = face_recognition.face_locations(imgSmall)  # capture all the face location in the current frame
+async def recognizeFace(image):
+    encodeListForKnownFaces = loadEncodeList('encodeList.pkl')
 
-    # then we send these location to the encoding function
-    encodedFace =  face_recognition.face_encodings(imgSmall, faceLocation)
+    try:
+        # Read the content of the UploadFile and decode it as a NumPy array
+        image_content = await image.read()
+        img_array = np.frombuffer(image_content, np.uint8)
+        
+        # Decode the NumPy array into an image using OpenCV
+        img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+    except Exception as e:
+        print("Error while decoding the image:", e)
+        return -1
+    
+    imgSmall = cv2.resize(img, (124, 124))
+    imgSmall = cv2.cvtColor(imgSmall, cv2.COLOR_BGR2RGB)
 
-    # find matches
-    # iterate through all the faces that we have found in the image
+    faceLocation = face_recognition.face_locations(imgSmall)
+    encodedFace = face_recognition.face_encodings(imgSmall, faceLocation)
+
     for encodeFace, faceLocation in zip(encodedFace, faceLocation):
-        matches = face_recognition.compare_faces(encodeListForKnownFaces, encodeFace)   # compare with all the encoding that we found before
-        faceDistance = face_recognition.face_distance(encodeListForKnownFaces, encodeFace)    # find the distance, this will give us distance according to the all the knownFaces
-        print(faceDistance)
+        matches = face_recognition.compare_faces(encodeListForKnownFaces, encodeFace)
+        faceDistance = face_recognition.face_distance(encodeListForKnownFaces, encodeFace)
+        print("Face distances:", faceDistance)
 
-        # get the best match which is the lowest distance in faceDistance List
-        matchIndex = np.argmin(faceDistance)    # will have the index of the best matched face
+        matchIndex = np.argmin(faceDistance)
 
         if matches[matchIndex]:
-            name = imageNames[matchIndex]
-            print(name)
+            # Use the encoding to find the associated name from the dictionary
+            encoding_name = next((name for name, encoding in image_encodings.items() if np.array_equal(encoding, encodeFace)), None)
 
-            # display a bounding box around that person and display their name
-            y1, x2, y2, x1 = faceLocation    # we have the location of the face in the imageSmall, we destruct the list
-            y1, x2, y2, x1 = y1*4, x2*4, y2*4, x1*4    # location of the face in the original image
-            cv2.rectangle(img, (x1, y1), (x2, y2), (255,255,0), 2)
-            cv2.rectangle(img, (x1, y2-35), (x2, y2), (255,255,0), 2)  # rectangle to display name
-            cv2.putText(img, name, (x1+6, y2-6), cv2.FONT_HERSHEY_COMPLEX, 1, (255,255,255), 2)
+            if encoding_name:
+                print("Match found with image:", encoding_name)
+                return encoding_name
+            else:
+                print("Match found, but image name not found.")
+                return -2
+
+    print("No match found in the encoded list.")
+    return -1
