@@ -23,7 +23,6 @@ def is_valid_image(file_name):
     return file_extension.lower() in SUPPORTED_EXTENSIONS
 
 @router.post("/recognizeSuspect")
-@router.post("/recognizeSuspect")
 async def recognizeFace(image: UploadFile = File(...)):
     encodeListForKnownFaces = loadEncodeList('encodeList.pkl')
     image_encodings = loadImageEncodings('image_encodings.pkl')  # Load the image encodings dictionary
