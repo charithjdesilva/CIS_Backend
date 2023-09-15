@@ -73,6 +73,17 @@ async def recognizeFace(image: UploadFile = File(...)):
             if encoding_name:
                 print("Match found with image:", encoding_name)
                 cv2.rectangle(original_img, (int(left), int(top)), (int(right), int(bottom)), (0, 255, 0), 2)
+                
+                # Add a transparent black background under the text
+                text_bg_height = 30  # Height of the text background
+                text_bg_color = (0, 0, 0, 0.7)  # Transparent black color (BGR + Alpha)
+                text_bg_top = int(top) - text_bg_height
+                text_bg_bottom = int(top)
+                text_bg_left = int(left)
+                text_bg_right = int(right)
+                cv2.rectangle(original_img, (text_bg_left, text_bg_top), (text_bg_right, text_bg_bottom), text_bg_color, cv2.FILLED)
+                
+                # Overlay the text on the transparent black background
                 cv2.putText(original_img, encoding_name, (int(left) + 6, int(top) - 6), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1)
         else:
             # If the face is not recognized, draw a red bounding box around it
