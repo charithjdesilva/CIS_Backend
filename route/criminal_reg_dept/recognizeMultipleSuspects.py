@@ -38,8 +38,11 @@ async def recognizeFace(image: UploadFile = File(...)):
         print("Error while decoding the image:", e)
         return -1
 
-    # Resize the image to 124x124 for face recognition
-    imgSmall = cv2.resize(original_img, (124, 124))
+    # Resize the image while maintaining the aspect ratio
+    target_width = 248
+    aspect_ratio = original_img.shape[1] / original_img.shape[0]
+    target_height = int(target_width / aspect_ratio)
+    imgSmall = cv2.resize(original_img, (target_width, target_height))
     imgSmall = cv2.cvtColor(imgSmall, cv2.COLOR_BGR2RGB)
 
     faceLocations = face_recognition.face_locations(imgSmall)
@@ -53,8 +56,8 @@ async def recognizeFace(image: UploadFile = File(...)):
         matchIndex = np.argmin(faceDistances)
         
         top, right, bottom, left = faceLocation
-        scale_factor_height = original_img.shape[0] / imgSmall.shape[0]  # Calculate the height scale factor
-        scale_factor_width = original_img.shape[1] / imgSmall.shape[1]  # Calculate the width scale factor
+        scale_factor_height = original_img.shape[0] / target_height  # Calculate the height scale factor
+        scale_factor_width = original_img.shape[1] / target_width  # Calculate the width scale factor
         top *= scale_factor_height
         right *= scale_factor_width
         bottom *= scale_factor_height
