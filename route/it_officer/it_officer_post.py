@@ -20,18 +20,38 @@ def create_user(user : UserBase ):
 
 @router.patch('/update-user/{id}')
 def update_user(id : Annotated[str, Path()],user : UserBase):
-    # for each_user in users:
-    #     if each_user['Reg_No'] == id:
-    #         # for key,value in each_user.items():
-    #         #     user.
+    """
+    Reg_No : str
+    NIC : str
+    First_Name : str
+    Last_Name : str
+    Tel_No : list[str]
+    Province : str
+    City : str
+    Area : str | None 
+    Address : str
+    Branch : str
+    Position : str
+    Join_Date : str
+    photo_of_criminal : list[Image] | None = None
+    
+    """
+    for userIn in users:
+        if userIn['Reg_No'] == id :
+            userIn['NIC'] = user.NIC if user.NIC != ''  else userIn['NIC']
+            userIn['First_Name'] = user.First_Name if user.First_Name != ''  else userIn['First_Name']
+            userIn['Last_Name'] = user.Last_Name if user.Last_Name != '' else userIn['Last_Name']
+            userIn['Province'] = user.Province if user.Province != ''  else userIn['Province']
+            userIn['City'] = user.City if user.City != ''  else userIn['City']
+            userIn['Area'] = user.Area if user.Area != ''  else userIn['Area']
+            userIn['Address'] = user.Address if user.Address != ''  else userIn['Address']
+            userIn['Position'] = user.Position if user.Position != ''  else userIn['Position']
+            userIn['Join_Date'] = user.Join_Date if user.Join_Date != ''  else userIn['Join_Date']
+            userIn['Branch'] = user.Branch if user.Branch != ''  else userIn['Branch']
+            
 
-    #         #     if (key == 'photo_of_criminal'):
 
-    #         #         for key_nest,value_nest in each_user.key.items():
-    #         #             each_user.key[key_nest] = user.key.key_nest if (user.key.key_nest != each_user.key[key_nest]) else each_user.key[key_nest]
-                
-    #         #     each_user[key] = user.key if (user.key != 'string' and user.key != each_user[key] and key != 'Reg_No' and key != 'photo_of_criminal') else each_user[key]
-    #         # return status.HTTP_200_OK
-    # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{id} is not found on the dummy data")
-    return "hello"
+            
+            
+            
     

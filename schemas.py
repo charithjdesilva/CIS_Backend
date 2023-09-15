@@ -1,5 +1,5 @@
 from fastapi import File,UploadFile
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
 from typing import Annotated
 
 # class UserDisplay(BaseModel):
@@ -18,12 +18,12 @@ class UserBase(BaseModel):
     Tel_No : str
     Province : str
     City : str
-    Area : str | None = None
+    Area : str | None 
     Address : str
     Branch : str
     Position : str
     Join_Date : str
-    photo_of_criminal : Image | None = None
+    photo_of_criminal : list[Image] | None = None
 
 
 # class UserOut(UserIn):
