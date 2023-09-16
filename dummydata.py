@@ -1,4 +1,25 @@
-users = [  ]
+from Security.password import hash_password,verify_password
+users = []
+
+user_login = []
+
+user_question_table = []
+
+code_in_four_digit = [i for i in range(1000,9999)]
+
+for i in range(1,21):
+    user = {
+        "username" : f"user{i}",
+        "password" : f"pasword{i}",
+        "hash_password" : hash_password(f"password{i}")
+    }
+    user_login.append(user)
+
+
+
+
+
+
 
 for i in range(1, 21):
     user = {
@@ -14,6 +35,7 @@ for i in range(1, 21):
         "Branch": "Kandy",
         "Position": "IOC",
         "Join_Date": "11/05/2015",
+        "photos" : 'avatar.jpg'
     }
     users.append(user)
 
