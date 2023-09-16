@@ -11,4 +11,8 @@ pytest
 jinja2
 websockets
 email-validator
+<<<<<<< HEAD
 Faker
+=======
+face_recognition
+>>>>>>> 6c4463fb35d3b03c7f7d685e69ab8835d9e5a33e

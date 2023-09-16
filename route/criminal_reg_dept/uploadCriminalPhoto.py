@@ -1,5 +1,7 @@
 from fastapi import FastAPI, APIRouter, File, UploadFile, Form
 import os
+import cv2
+from recognizeCriminal import encodeImages, findEncodings
 
 router = APIRouter(
     prefix="/criminal-reg-dept",
@@ -8,7 +10,7 @@ router = APIRouter(
 
 SUPPORTED_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 
-@router.post("/criminalPhotoUpload/")
+@router.post("/criminalPhotoUpload")
 async def upload_criminalPhoto(suspect_name: str = Form(...), file: UploadFile = File(...)):
     # Define the upload directory (e.g., "Suspects")
     upload_dir = "Suspects"
@@ -16,7 +18,7 @@ async def upload_criminalPhoto(suspect_name: str = Form(...), file: UploadFile =
 
     # Ensure the provided suspect_name is not empty
     if not suspect_name:
-        return {"error": "Persona name cannot be empty."}
+        return {"error": "Person name cannot be empty."}
 
     # Get the file extension from the uploaded file
     file_extension = os.path.splitext(file.filename)[1].lower()
@@ -31,5 +33,9 @@ async def upload_criminalPhoto(suspect_name: str = Form(...), file: UploadFile =
     # Save the uploaded file to the "Suspects" directory
     with open(file_path, "wb") as image:
         image.write(file.file.read())
+
+    # Call the encodeImages function with the path of the new image to update the encodings
+    new_image_path = file_path
+    encodeList = encodeImages(new_image_path)
 
     return {"filename": f"{suspect_name}{file_extension}"}

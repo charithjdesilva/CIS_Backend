@@ -12,7 +12,3 @@ router = APIRouter(
     prefix="/criminal-reg-dept",
     tags=['criminal registration department section']
 )
-
-@router.get("/hello")
-def hello():
-    return {"message" : "hello world"}
