@@ -6,7 +6,7 @@ for i in range(1, 21):
         "NIC": "980525364",
         "First_Name": "Alex",
         "Last_Name": "Dude",
-        "Tel_No": ["+9414545612", "+9414545612"],
+        "Tel_No": "+9414545612",
         "Province": "Eastern",
         "City": "Kandy",
         "Area": "Kandy",
@@ -14,10 +14,6 @@ for i in range(1, 21):
         "Branch": "Kandy",
         "Position": "IOC",
         "Join_Date": "11/05/2015",
-        "photo_of_criminal": [{
-            "url" : f"dummyUrl{i}",
-            "name" : f"name{i}"
-        }]
     }
     users.append(user)
 

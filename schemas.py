@@ -7,8 +7,7 @@ from typing import Annotated
 
 
 class Image(BaseModel):
-    url : str
-    name : str
+    photo_of_criminal : list[str]
 
 class UserBase(BaseModel):
     Reg_No : str
@@ -23,8 +22,9 @@ class UserBase(BaseModel):
     Branch : str
     Position : str
     Join_Date : str
-    photo_of_criminal : list[Image] | None = None
-
+    
+class UserDisplay(UserBase):
+    user_photos : list[str] | None
 
 # class UserOut(UserIn):
 #     pass

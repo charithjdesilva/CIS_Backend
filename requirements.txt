@@ -13,3 +13,4 @@ websockets
 email-validator
 Faker
 face_recognition
+opencv-python

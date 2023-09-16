@@ -14,8 +14,7 @@ router = APIRouter(
 
 @router.post('/register-user')
 def create_user(user : UserBase ):
-    users.append(user)
-    return status.HTTP_200_OK
+    return "hello"
 
 
 @router.patch('/update-user/{id}')
