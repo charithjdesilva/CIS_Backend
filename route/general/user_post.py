@@ -9,7 +9,7 @@ from schemas import LoginCredentials, SendCodeBase , Send4DigitCode , Question ,
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import Optional
 from Security.password import hash_password,verify_password
-from dummydata import user_login,code_in_four_digit, user_question_table
+from dummydata import user_login,code_in_four_digit, user_question_table , user_query_table
 import random
 
 
@@ -81,9 +81,6 @@ def check_validation(request : SendCodeBase):
             return {"message" : f"4 digit code is send to the {request.value} "}
         else:
             raise HTTPException(status_code=401, detail="Invalid mobile number")
-    
-
-    
 
 
 @router.post("/4-digit-code/")
@@ -123,7 +120,7 @@ def post_questions(user_question : Question):
 @router.post("/contact_us/queries")
 def post_questions(user_query : Query):
     if user_query:
-        user_question_table.append(user_query)
+        user_query_table.append(user_query)
         return status.HTTP_200_OK
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="invalid question")

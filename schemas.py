@@ -28,6 +28,20 @@ class UserBase(BaseModel):
     Branch : str
     Position : str
     Join_Date : str = Field(description="format day-month-year 01-02-2023")
+
+class UserUpdate(BaseModel):
+    Reg_No : str = ""
+    NIC : str = Field(default="",max_length=12)
+    First_Name : str = Field(default="",max_length=50)
+    Last_Name : str = Field(default="",max_length=50)
+    Tel_No : int 
+    Province : str = ""
+    City : str = ""
+    Area : str = "" 
+    Address : str = ""
+    Branch : str = ""
+    Position : str = ""
+    Join_Date : str = Field(default="",description="format day-month-year 01-02-2023") 
     
 class UserDisplay(UserBase):
     user_photo: str

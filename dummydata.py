@@ -5,6 +5,8 @@ user_login = []
 
 user_question_table = []
 
+user_query_table = []
+
 code_in_four_digit = [i for i in range(1000,9999)]
 
 for i in range(1,21):
