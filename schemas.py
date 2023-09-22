@@ -13,7 +13,7 @@ class LoginOut(BaseModel):
     hashed_password : str
 
 class Image(BaseModel):
-    photo_of_criminal : list[str]
+    photo_of_criminal : str
 
 class UserBase(BaseModel):
     Reg_No : str = Field(description="Enter the user registration Number")

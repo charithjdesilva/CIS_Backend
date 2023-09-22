@@ -1,10 +1,16 @@
-from fastapi import APIRouter,Form,File,UploadFile,Path,HTTPException,status
+from fastapi import APIRouter, Body,Form,File, Query,UploadFile,Path,HTTPException,status
 from fastapi.encoders import jsonable_encoder
 from typing import Annotated
 from pydantic import BaseModel
 from enum import Enum
 from schemas import UserBase
 from dummydata import users
+from pathlib import Path
+from fastapi.responses import FileResponse
+
+
+UPLOAD_DIR = Path() / 'uploads'
+
 
 router = APIRouter(
     prefix="/it-officer",
@@ -15,13 +21,28 @@ router = APIRouter(
 
 @router.post('/register-user',description="user can enter textual details to create user profile with defaullt avatar")
 def create_user(user : UserBase):
-    user_profile={**user.model_dump(), "photos" : "avatar.png"}
+    user_profile={**user.model_dump(), "user_photo" : UPLOAD_DIR / 'avatar.png'}
     users.append(user_profile)
     return status.HTTP_200_OK
 
-@router.post("/uploadfiles/")
-async def create_upload_files(files: list[UploadFile]):
-    return {"filenames": [file.filename for file in files]}
+@router.post("/user-photo")
+async def upload_user_image( id : Annotated[str,Query()],file: UploadFile| None = None ):
+    if file:
+        for user in users:
+            if user['Reg_No'] == id :
+                data = await file.read()
+                save_to = UPLOAD_DIR / file.filename
+                user['photo'] = save_to
+                with open(save_to , 'wb') as f:
+                    f.write(data)
+                # return status.HTTP_200_OK
+                return FileResponse(save_to)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{id} is not found to insert image")
+                
+        
+
+
+    
 
 @router.post('/user/upload-photos/{id}')
 def upload_user_photo(id : Annotated[str, Path()], user_photo : UploadFile = File(...)):

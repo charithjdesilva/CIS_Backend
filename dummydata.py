@@ -37,7 +37,7 @@ for i in range(1, 21):
         "Branch": "Kandy",
         "Position": "IOC",
         "Join_Date": "11/05/2015",
-        "photos" : 'avatar.jpg'
+        "photo" : 'avatar.jpg'
     }
     users.append(user)
 
