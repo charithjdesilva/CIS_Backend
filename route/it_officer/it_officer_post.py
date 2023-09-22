@@ -32,10 +32,6 @@ def upload_user_photo(id : Annotated[str, Path()], user_photo : UploadFile = Fil
         
     raise HTTPException(status_code=404,detail=f"{id} is not found in the db")
 
-            
-                
-        
-
 
 @router.patch('/update-user/{id}')
 def partial_update_user(id : Annotated[str, Path()],user : UserBase):
