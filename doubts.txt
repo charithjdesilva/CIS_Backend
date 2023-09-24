@@ -1,4 +1,10 @@
 IT Officer Section
 
 1.What values are used to search the user in user's home page
-2. 
+2. user have email id or not
+3. update criminal page
+
+
+Police Officer
+
+1. Can we search criminal using name in search page

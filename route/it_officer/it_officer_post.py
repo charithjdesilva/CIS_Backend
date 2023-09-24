@@ -9,7 +9,8 @@ from pathlib import Path
 from fastapi.responses import FileResponse
 
 
-UPLOAD_DIR = Path() / 'uploads'
+UPLOAD_DIR = Path() / 'users_image'
+UPLOAD_DIR1 = Path() / 'criminal_images'
 
 
 router = APIRouter(
@@ -18,78 +19,127 @@ router = APIRouter(
 )
 
 
+@router.post('/register-user')
+async def create_user(
+    Reg_No : Annotated[str , Form()],
+    NIC : Annotated[str, Form()],
+    First_Name : Annotated[str, Form()],
+    Last_Name : Annotated[str, Form()],
+    Tel_No : Annotated[str, Form()],
+    Province : Annotated[str , Form()],
+    City : Annotated[str, Form()],
+    Area : Annotated[str, Form()],
+    Address : Annotated[str, Form()],
+    Branch : Annotated[str, Form()],
+    Position : Annotated[str , Form()],
+    Join_Date : Annotated[str, Form()],
+    photo_of_user : UploadFile = UPLOAD_DIR / 'avatar.png'
 
-@router.post('/register-user',description="user can enter textual details to create user profile with defaullt avatar")
-def create_user(user : UserBase):
-    user_profile={**user.model_dump(), "user_photo" : UPLOAD_DIR / 'avatar.png'}
-    users.append(user_profile)
-    return status.HTTP_200_OK
-
-@router.post("/user-photo")
-async def upload_user_image( id : Annotated[str,Query()],file: UploadFile| None = None ):
-    if file:
-        for user in users:
-            if user['Reg_No'] == id :
-                data = await file.read()
-                save_to = UPLOAD_DIR / file.filename
-                user['photo'] = save_to
-                with open(save_to , 'wb') as f:
-                    f.write(data)
-                # return status.HTTP_200_OK
-                return FileResponse(save_to)
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{id} is not found to insert image")
-                
-        
-
-
+):
+    output =  {
+    "Reg_No" : Reg_No,
+    "NIC" : NIC,
+    "First_Name" : First_Name,
+    "Last_Name" : Last_Name,
+    "Tel_No" : Tel_No,
+    "Province" : Province,
+    "City" : City,
+    "Area" : Area,
+    "Address" : Address,
+    "Branch" : Branch,
+    "Position" : Position,
+    "Join_Date" : Join_Date,
+    "photo_of_user" : UPLOAD_DIR / 'avatar.png'
+    }
     
+    if photo_of_user != output['photo_of_user']:
+        data = await photo_of_user.read()
+        save_to = UPLOAD_DIR / photo_of_user.filename
+        output['photo_of_user'] = save_to
+        with open(save_to , 'wb') as f:
+            f.write(data)
 
-@router.post('/user/upload-photos/{id}')
-def upload_user_photo(id : Annotated[str, Path()], user_photo : UploadFile = File(...)):
-    for user in users:
-        if user['Reg_No'] == id :
-            user['photos'] = user_photo.filename
-            return status.HTTP_200_OK
-        
-    raise HTTPException(status_code=404,detail=f"{id} is not found in the db")
+    users.append(output)
+
+    return status.HTTP_200_OK
 
 
 @router.patch('/update-user/{id}')
-def partial_update_user(id : Annotated[str, Path()],user : UserBase):
+async def update_user(
+    id : Annotated[str, Path()],
+    NIC : Annotated[str, Form()]= None,
+    First_Name : Annotated[str, Form()]= None,
+    Last_Name : Annotated[str, Form()]= None,
+    Tel_No : Annotated[str, Form()]= None,
+    Province : Annotated[str , Form()]= None,
+    City : Annotated[str, Form()]= None,
+    Area : Annotated[str, Form()]= None,
+    Address : Annotated[str, Form()]= None,
+    Branch : Annotated[str, Form()]= None,
+    Position : Annotated[str , Form()]= None,
+    Join_Date : Annotated[str, Form()]= None,
+    photo_of_user : UploadFile = UPLOAD_DIR / 'avatar.png'
+
+):
     for userIn in users:
         if userIn['Reg_No'] == id :
-            userIn['NIC'] = user.NIC if user.NIC != ''  else userIn['NIC']
-            userIn['First_Name'] = user.First_Name if user.First_Name != ''  else userIn['First_Name']
-            userIn['Last_Name'] = user.Last_Name if user.Last_Name != '' else userIn['Last_Name']
-            userIn['Province'] = user.Province if user.Province != ''  else userIn['Province']
-            userIn['City'] = user.City if user.City != ''  else userIn['City']
-            userIn['Area'] = user.Area if user.Area != ''  else userIn['Area']
-            userIn['Address'] = user.Address if user.Address != ''  else userIn['Address']
-            userIn['Position'] = user.Position if user.Position != ''  else userIn['Position']
-            userIn['Join_Date'] = user.Join_Date if user.Join_Date != ''  else userIn['Join_Date']
-            userIn['Branch'] = user.Branch if user.Branch != ''  else userIn['Branch']
+            if NIC:
+                userIn['NIC'] = NIC
+            if First_Name:
+                userIn['First_Name'] = First_Name
+            if Last_Name:
+                userIn['Last_Name'] = Last_Name
+            if Province:
+                userIn['Province'] = Province
+            if City:
+                userIn['City'] = City
+            if Area:
+                userIn['Area'] = Area
+            if Address:
+                userIn['Address'] = Address
+            if Position:
+                userIn['Position'] = Position
+            if Join_Date:
+                userIn['Join_Date'] = Join_Date
+            if Branch:
+                userIn['Branch'] = Branch
+            if photo_of_user != UPLOAD_DIR / 'avatar.png' and photo_of_user != userIn['photo_of_user'] :
+                data = await photo_of_user.read()
+                save_to = UPLOAD_DIR / photo_of_user.filename
+                userIn['photo_of_user'] = save_to
+                with open(save_to , 'wb') as f:
+                    f.write(data)
+                
+
             return status.HTTP_200_OK
         
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f" id - {id} is not found")
 
-@router.put('/update-user/{id}')
-def full_update_user(id : Annotated[str, Path()],user : UserBase):
-    for userIn in users:
-        if userIn['Reg_No'] == id :
-            userIn['NIC'] = user.NIC 
-            userIn['First_Name'] = user.First_Name 
-            userIn['Last_Name'] = user.Last_Name 
-            userIn['Province'] = user.Province 
-            userIn['City'] = user.City 
-            userIn['Area'] = user.Area 
-            userIn['Address'] = user.Address 
-            userIn['Position'] = user.Position 
-            userIn['Join_Date'] = user.Join_Date 
-            userIn['Branch'] = user.Branch 
-            return status.HTTP_200_OK
-        
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"id - {id} is not found")
-            
+
+@router.patch('/update-criminal/{id}')
+def update_criminal(
+    id : Annotated[str, Path()],
+    NIC : Annotated[str, Form()]= None,
+    First_Name : Annotated[str, Form()]= None,
+    Last_Name : Annotated[str, Form()]= None,
+    Tel_No : Annotated[str, Form()]= None,
+    Province : Annotated[str , Form()]= None,
+    City : Annotated[str, Form()]= None,
+    Area : Annotated[str, Form()]= None,
+    Address : Annotated[str, Form()]= None,
+    Landmark : Annotated[str, Form()] = None,
+    Photo_Of_Criminal : UploadFile = UPLOAD_DIR / 'avatar.png'
+):
+    return "Confusion"
+
+    
+    
+    
+
+
+
+
+
 
 
             

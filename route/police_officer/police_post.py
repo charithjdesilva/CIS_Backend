@@ -4,31 +4,18 @@ from pydantic import BaseModel,EmailStr
 from enum import Enum
 
 
-
-
-
 router = APIRouter(
     prefix='/police-officer',
     tags=['Police Officer Section']
 )
 
-
-
-
-
 @router.post("/search/biodata")
-def search_criminal(*,type : Annotated[str, Form(min_length=7)] = 'biodata', Biodata: Annotated[str , Form(description="Name or NIC")] ):
-    return {
-        "type" : type,
-        "Biodata" : Biodata
-    }
+def search_criminal(id : Annotated[str , Form()]):
+    return "give criminal details based on the id"
 
 @router.post("/search/biometrics")
-def search_criminal(*,type : Annotated[str, Form(min_length=7)] = 'biometrics', Biometrics: Annotated[str , Form(description="Scan Face or Upload Image or Fingerprint")] ):
-    return {
-        "type" : type,
-        "Biodata" : Biometrics
-    }
+def search_criminal():
+    return "give criminal details"
 
 class IdType(str,Enum):
     criminal_id = "Criminal_id"

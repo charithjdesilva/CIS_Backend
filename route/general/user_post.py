@@ -11,6 +11,7 @@ from typing import Optional
 from Security.password import hash_password,verify_password
 from dummydata import user_login,code_in_four_digit, user_question_table , user_query_table
 import random
+from Security.user_defined_datatypes import SriLankaMobileNumber
 
 
 router = APIRouter(
@@ -55,7 +56,7 @@ def do_login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 class Options(Enum):
     Email = 'Email'
-    Mobile_Number = 'Mobile Number'
+    Mobile_Number = 'MobileNumber'
 
 class OptionsValue(BaseModel):
     value :  EmailStr | str
@@ -65,22 +66,30 @@ class OptionsValue(BaseModel):
 
 
 
-@router.post("/forget-password")
-def check_validation(request : SendCodeBase):
-    """
-        ** email => use email
-        ** mobile number => use tel
-    """
-    if request.type == 'email':
-        if is_valid_email(request.value):
-            return {"message" : f"4 digit code is send to the {request.value} "}
-        else:
-            raise HTTPException(status_code=401, detail='It is invalid email')
-    elif request.type == 'tel':
-        if is_valid_sri_lankan_mobile_number(request.value):
-            return {"message" : f"4 digit code is send to the {request.value} "}
-        else:
-            raise HTTPException(status_code=401, detail="Invalid mobile number")
+# @router.post("/forget-password/{type}")
+# def check_validation(type : Annotated[Options , Path()], value : Annotated[ str , Form()] ):
+#     if type.value.capitalize() == Options.Email:
+#         if is_valid_email(value):
+            
+
+#     if type.value.capitalize() == Options.Mobile_Number:
+        
+
+
+
+
+
+
+    # if request.type == 'email':
+    #     if is_valid_email(request.value):
+    #         return {"message" : f"4 digit code is send to the {request.value} "}
+    #     else:
+    #         raise HTTPException(status_code=401, detail='It is invalid email')
+    # elif request.type == 'tel':
+    #     if is_valid_sri_lankan_mobile_number(request.value):
+    #         return {"message" : f"4 digit code is send to the {request.value} "}
+    #     else:
+    #         raise HTTPException(status_code=401, detail="Invalid mobile number")
 
 
 @router.post("/4-digit-code/")

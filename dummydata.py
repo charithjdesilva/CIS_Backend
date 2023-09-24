@@ -1,4 +1,9 @@
 from Security.password import hash_password,verify_password
+from pathlib import Path
+
+UPLOAD_DIR = Path() / 'users_image'
+
+
 users = []
 
 user_login = []
@@ -6,6 +11,28 @@ user_login = []
 user_question_table = []
 
 user_query_table = []
+
+criminals = []
+
+victims = [  {"crime_id": 12345,
+    "life_status": "Alive",
+    "nic": "98562222V",
+    "first_name": "John",
+    "last_name": "Due",
+    "tel_no": "784561231",
+    "province": "Sabaragamuwa",
+    "district": "Ratnapura",
+    "city": "Beliholoya",
+    "area": "Pambahinna",
+    "address": "",
+    "landmark": "",
+    "houseNoOrName": "",
+    "additional_info": "",
+    "photos_crime": "victim_images\\12345_98562222V.jpeg"
+  }]
+
+
+
 
 code_in_four_digit = [i for i in range(1000,9999)]
 
@@ -37,9 +64,30 @@ for i in range(1, 21):
         "Branch": "Kandy",
         "Position": "IOC",
         "Join_Date": "11/05/2015",
-        "photo" : 'avatar.jpg'
+        "photo_of_user" : UPLOAD_DIR / 'avatar.png'
     }
     users.append(user)
+
+
+for i in range(1, 21):
+    criminal = {
+        "Crime_ID": f"1{i:03d}",
+        "Life Status" : "Alive",
+        "In Custody" : "Yes",
+        "Crime Justified" : "Yes",
+        "NIC": "980525364",
+        "First_Name": "Alex",
+        "Last_Name": "Dude",
+        "Tel_No": "+9414545612",
+        "Province": "Eastern",
+        "City": "Kandy",
+        "Area": "Kandy",
+        "Address": "Main street",
+        "Landmark" : "",
+        "photo_of_user" : UPLOAD_DIR / 'avatar.png',
+        "Add to crimes" : "",
+    }
+    criminals.append(criminal)
 
 # Print the list of objects
 # for obj in dummy_list:
