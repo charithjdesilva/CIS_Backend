@@ -7,10 +7,8 @@ from typing import Annotated
 from Security.password import is_valid_password
 from fastapi.responses import FileResponse
 from dummydata import victims
-from pathlib import Path
 
-UPLOAD_CRIME = Path() / 'crime_images'
-UPLOAD_VICTIM = Path() / 'victim_images'
+
 
 router = APIRouter(
     prefix="/criminal-reg-dept",
@@ -18,7 +16,7 @@ router = APIRouter(
 )
 
 @router.get('/{nic}/photo')
-def get_victim_photo(nic : Annotated[str | None , Path()] = '98562222V'):
+def get_victim_photo(nic : Annotated[str | None , Path()]):
     for victim in victims:
         if nic  == victim['nic']:
             return FileResponse(victim['photos_crime'])

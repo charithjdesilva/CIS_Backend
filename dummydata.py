@@ -14,7 +14,11 @@ user_query_table = []
 
 criminals = []
 
-victims = [  {"crime_id": 12345,
+crimes = []
+
+
+victims = [  
+    {"crime_id": 12345,
     "life_status": "Alive",
     "nic": "98562222V",
     "first_name": "John",
@@ -28,8 +32,17 @@ victims = [  {"crime_id": 12345,
     "landmark": "",
     "houseNoOrName": "",
     "additional_info": "",
-    "photos_crime": "victim_images\\12345_98562222V.jpeg"
+    "photos_crime": "Images\\victim_images\\12345_98562222V.jpeg"
   }]
+
+evidences = [
+    {
+    "crime_id": 12345,
+    "evidence_id": 12348,
+    "photo_of_evidence": "Images\\evidence_images\\common.jpg",
+    "testimonials": ""
+  }
+]
 
 
 
@@ -75,7 +88,7 @@ for i in range(1, 21):
         "Life Status" : "Alive",
         "In Custody" : "Yes",
         "Crime Justified" : "Yes",
-        "NIC": "980525364",
+        "NIC": "980525{i:03d}V",
         "First_Name": "Alex",
         "Last_Name": "Dude",
         "Tel_No": "+9414545612",
