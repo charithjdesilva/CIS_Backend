@@ -26,20 +26,20 @@ class User(Base):
 
 
 # # Define the Crime model
-class Crime(Base):
-    __tablename__ = 'Crime'
+# class Crime(Base):
+#     __tablename__ = 'Crime'
 
-    CrimeID = Column(String(50), primary_key=True)
-    CrimeType = Column(String(50))
-    CrimeDate = Column(Date)
-    CrimeTime = Column(Time)
-    Province = Column(String(25))
-    District = Column(String(25))
-    City = Column(String(50))
-    Area = Column(String(200))
-    HouseNoOrName = Column(String(100))
-    Landmarks = Column(String(200))
-    Testimonials = Column(String(500))
+#     CrimeID = Column(String(50), primary_key=True)
+#     CrimeType = Column(String(50))
+#     CrimeDate = Column(Date)
+#     CrimeTime = Column(Time)
+#     Province = Column(String(25))
+#     District = Column(String(25))
+#     City = Column(String(50))
+#     Area = Column(String(200))
+#     HouseNoOrName = Column(String(100))
+#     Landmarks = Column(String(200))
+#     Testimonials = Column(String(500))
 
 # # Define the Evidence model
 # class Evidence(Base):
@@ -84,19 +84,19 @@ class Crime(Base):
 #     CrimeID = Column(String(50), ForeignKey('Crime.CrimeID'), primary_key=True)
 
 # # Define the Photos model
-class Photos(Base):
-    __tablename__ = 'Photos'
+# class Photos(Base):
+#     __tablename__ = 'Photos'
 
-    PhotoID = Column(String(110), primary_key=True)
-    PhotoType = Column(String(13))
-    PhotoPath = Column(String(180))
+#     PhotoID = Column(String(110), primary_key=True)
+#     PhotoType = Column(String(13))
+#     PhotoPath = Column(String(180))
 
 # # Define the CrimePhoto model
-class CrimePhoto(Base):
-    __tablename__ = 'CrimePhoto'
+# class CrimePhoto(Base):
+#     __tablename__ = 'CrimePhoto'
 
-    PhotoID = Column(String(110), ForeignKey('Photos.PhotoID'), primary_key=True)
-    CrimeID = Column(String(50), ForeignKey('Crime.CrimeID'), primary_key=True)
+#     PhotoID = Column(String(110), ForeignKey('Photos.PhotoID'), primary_key=True)
+#     CrimeID = Column(String(50), ForeignKey('Crime.CrimeID'), primary_key=True)
 
 # # Define the PersonPhoto model
 # class PersonPhoto(Base):
