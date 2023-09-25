@@ -1,4 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,Depends
+import models
+from database import engine, SessionLocal
+
+
+
 from route.general import user_post,user_get
 from route.police_officer import police_post,police_get
 from route.it_officer import it_officer_post,it_officer_get
@@ -21,6 +26,12 @@ app.include_router(it_officer_get.router)
 app.include_router(uploadCriminalPhoto.router)
 app.include_router(recognizeSuspect.router)
 app.include_router(recognizeMultipleSuspects.router)
+
+
+models.Base.metadata.create_all(bind=engine)
+
+
+
 
 @app.get("/hello")
 def show():

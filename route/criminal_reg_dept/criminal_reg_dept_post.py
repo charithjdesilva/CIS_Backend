@@ -21,36 +21,20 @@ router = APIRouter(
 #pending = add to database
 @router.post('/register-crime')
 async def register_crime(
-    crime_id : Annotated[int, Form()],
-    crime_type : Annotated[str, Form()],
-    date : Annotated[str, Form()],
-    time : Annotated[str , Form()],
-    province : Annotated[str, Form()],
-    district : Annotated[str, Form()],
-    city : Annotated[str, Form()],
-    area : Annotated[str, Form()],
-    address : Annotated[str|None, Form()] = None,
-    landmark : Annotated[str|None, Form()] = None,
-    houseNoOrName : Annotated[str , Form()] = None,
-    testimonials : Annotated[str|None , Form()] = None,
+    CrimeID : Annotated[int, Form()],
+    CrimeType : Annotated[str, Form()],
+    CrimeDate : Annotated[str, Form()],
+    CrimeTime : Annotated[str , Form()],
+    Province : Annotated[str, Form()],
+    District : Annotated[str, Form()],
+    City : Annotated[str, Form()],
+    Area : Annotated[str, Form()],
+    Landmarks : Annotated[str, Form()] = None,
+    HouseNoOrName : Annotated[str , Form()] = None,
+    testimonials : Annotated[str , Form()] = None,
     photos_crime : UploadFile  = common_crime_image,
 ):
-    crime = {
-        "crime_id" : crime_id ,
-        "crime_type" :crime_type,
-        "date" : date,
-        "time" : time,
-        "province" : province,
-        "district" : district,
-        "city" : city,
-        "area" : area,
-        "address" : address if address else "",
-        "landmark" : landmark if landmark else "",
-        "houseNoOrName" : houseNoOrName if houseNoOrName else "",
-        "testimonials" : testimonials if testimonials else "",
-        "photos_crime" : photos_crime,
-    }
-
+    
     if photos_crime != common_victim_image:
         data = await photos_crime.read()
         name , extension = os.path.splitext(photos_crime.filename)

@@ -3,14 +3,21 @@ from fastapi.encoders import jsonable_encoder
 from typing import Annotated
 from pydantic import BaseModel
 from enum import Enum
-from schemas import UserBase
-from dummydata import users
 from pathlib import Path
 from fastapi.responses import FileResponse
+import os
+from datetime import datetime
+
+from database import db_dependency
+from schemas import UserBase
+from dummydata import users
+from Images.path import UPLOAD_USER, UPLOAD_CRIMINAL
+from Images.path import common_users_image, common_criminal_image
+from models import User
 
 
-UPLOAD_DIR = Path() / 'users_image'
-UPLOAD_DIR1 = Path() / 'criminal_images'
+
+
 
 
 router = APIRouter(
@@ -19,47 +26,75 @@ router = APIRouter(
 )
 
 
-@router.post('/register-user')
+@router.post('/register-user',description="Register User")
 async def create_user(
-    Reg_No : Annotated[str , Form()],
+    db: db_dependency,
+    UserType : Annotated[str, Form(description="CriminalRegDept, ITOfficer, PoliceOfficer")],
+    RegNo : Annotated[str , Form()],
     NIC : Annotated[str, Form()],
-    First_Name : Annotated[str, Form()],
-    Last_Name : Annotated[str, Form()],
-    Tel_No : Annotated[str, Form()],
-    Province : Annotated[str , Form()],
-    City : Annotated[str, Form()],
-    Area : Annotated[str, Form()],
-    Address : Annotated[str, Form()],
-    Branch : Annotated[str, Form()],
-    Position : Annotated[str , Form()],
-    Join_Date : Annotated[str, Form()],
-    photo_of_user : UploadFile = UPLOAD_DIR / 'avatar.png'
+    FirstName : Annotated[str, Form()],
+    LastName : Annotated[str, Form()],
+    Tel_No : Annotated[str, Form(description="can be maximum 10 characters")] = None,
+    Branch : Annotated[str, Form(description=" branch can be null because, some times a user cannot be associated with a branch such as while training")] = None,
+    Province : Annotated[str , Form()] = None,
+    District : Annotated[str, Form()] = None,
+    City : Annotated[str, Form()] = None,
+    Area : Annotated[str, Form()]= None,
+    Position : Annotated[str , Form()] = None,
+    HouseNoOrName :Annotated[str , Form()] = None,
+    JoinedDate : Annotated[str, Form()] = None,
+    Photo : UploadFile = common_users_image,
 
 ):
-    output =  {
-    "Reg_No" : Reg_No,
-    "NIC" : NIC,
-    "First_Name" : First_Name,
-    "Last_Name" : Last_Name,
-    "Tel_No" : Tel_No,
-    "Province" : Province,
-    "City" : City,
-    "Area" : Area,
-    "Address" : Address,
-    "Branch" : Branch,
-    "Position" : Position,
-    "Join_Date" : Join_Date,
-    "photo_of_user" : UPLOAD_DIR / 'avatar.png'
-    }
+    if JoinedDate:
+        joined_date = datetime.strptime(JoinedDate, '%Y-%m-%d')
+    else:
+        joined_date = None
     
-    if photo_of_user != output['photo_of_user']:
-        data = await photo_of_user.read()
-        save_to = UPLOAD_DIR / photo_of_user.filename
-        output['photo_of_user'] = save_to
+    save_to = common_users_image
+    
+    if Photo != common_users_image :
+        data = await Photo.read()
+        name , extension = os.path.splitext(Photo.filename)
+        save_to = UPLOAD_USER / f"{NIC}_{RegNo}{extension}"
         with open(save_to , 'wb') as f:
             f.write(data)
 
-    users.append(output)
+    user = User(
+        RegNo =  RegNo,
+        NIC = NIC,
+        FirstName = FirstName,
+        LastName = LastName,
+        Tel_No = Tel_No,
+        Branch = Branch,
+        UserType = UserType,
+        JoinedDate = joined_date,
+        Position = Position,
+        Photo = save_to,
+        Province=Province,
+        District=District,
+        City=City,
+        Area=Area,
+        HouseNoOrName=HouseNoOrName,
+    )
+
+    try:
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        return {"message": "User created successfully"}
+    except Exception as e :
+        error_message = str(e)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+    
+        
+    
+
+    
+
+
+    
+
 
     return status.HTTP_200_OK
 
@@ -78,7 +113,7 @@ async def update_user(
     Branch : Annotated[str, Form()]= None,
     Position : Annotated[str , Form()]= None,
     Join_Date : Annotated[str, Form()]= None,
-    photo_of_user : UploadFile = UPLOAD_DIR / 'avatar.png'
+    photo_of_user : UploadFile = common_users_image
 
 ):
     for userIn in users:
@@ -103,12 +138,12 @@ async def update_user(
                 userIn['Join_Date'] = Join_Date
             if Branch:
                 userIn['Branch'] = Branch
-            if photo_of_user != UPLOAD_DIR / 'avatar.png' and photo_of_user != userIn['photo_of_user'] :
-                data = await photo_of_user.read()
-                save_to = UPLOAD_DIR / photo_of_user.filename
-                userIn['photo_of_user'] = save_to
-                with open(save_to , 'wb') as f:
-                    f.write(data)
+            # if photo_of_user != UPLOAD_DIR / 'avatar.png' and photo_of_user != userIn['photo_of_user'] :
+            #     data = await photo_of_user.read()
+            #     save_to = UPLOAD_DIR / photo_of_user.filename
+            #     userIn['photo_of_user'] = save_to
+            #     with open(save_to , 'wb') as f:
+            #         f.write(data)
                 
 
             return status.HTTP_200_OK
@@ -128,7 +163,7 @@ def update_criminal(
     Area : Annotated[str, Form()]= None,
     Address : Annotated[str, Form()]= None,
     Landmark : Annotated[str, Form()] = None,
-    Photo_Of_Criminal : UploadFile = UPLOAD_DIR / 'avatar.png'
+    Photo_Of_Criminal : UploadFile = common_criminal_image
 ):
     return "Confusion"
 

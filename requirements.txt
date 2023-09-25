@@ -15,3 +15,4 @@ Faker
 face_recognition
 opencv-python
 python-dotenv
+pymysql
