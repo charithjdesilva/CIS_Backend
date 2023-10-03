@@ -26,20 +26,20 @@ class User(Base):
 
 
 # # Define the Crime model
-# class Crime(Base):
-#     __tablename__ = 'Crime'
+class Crime(Base):
+    __tablename__ = 'Crime'
 
-#     CrimeID = Column(String(50), primary_key=True)
-#     CrimeType = Column(String(50))
-#     CrimeDate = Column(Date)
-#     CrimeTime = Column(Time)
-#     Province = Column(String(25))
-#     District = Column(String(25))
-#     City = Column(String(50))
-#     Area = Column(String(200))
-#     HouseNoOrName = Column(String(100))
-#     Landmarks = Column(String(200))
-#     Testimonials = Column(String(500))
+    CrimeID = Column(String(50), primary_key=True)
+    CrimeType = Column(String(50))
+    CrimeDate = Column(Date)
+    CrimeTime = Column(String(50))
+    Province = Column(String(25))
+    District = Column(String(25))
+    City = Column(String(50))
+    Area = Column(String(200))
+    HouseNoOrName = Column(String(100))
+    Landmarks = Column(String(200))
+    Testimonials = Column(String(500))
 
 # # Define the Evidence model
 # class Evidence(Base):
@@ -49,23 +49,25 @@ class User(Base):
 #     Testimonials = Column(String(500))
 
 # # Define the Person model
-# class Person(Base):
-#     __tablename__ = 'Person'
+class Person(Base):
+    __tablename__ = 'Person'
 
-#     PersonID = Column(String(100), primary_key=True)
-#     NIC = Column(String(12), unique=True, nullable=False)
-#     FirstName = Column(String(50), nullable=False)
-#     LastName = Column(String(50), nullable=False)
-#     PhoneNo = Column(String(10))
-#     Branch = Column(String(50))
-#     PersonType = Column(String(15))
-#     LifeStatus = Column(String(5))
-#     Photo = Column(String(100))
-#     Province = Column(String(25))
-#     District = Column(String(25))
-#     City = Column(String(50))
-#     Area = Column(String(200))
-#     HouseNoOrName = Column(String(100))
+    PersonID = Column(String(100), primary_key=True)
+    NIC = Column(String(12), unique=True, nullable=False)
+    FirstName = Column(String(50), nullable=False)
+    LastName = Column(String(50), nullable=False)
+    PhoneNo = Column(String(10))
+    Branch = Column(String(50))
+    PersonType = Column(String(15))
+    LifeStatus = Column(String(5))
+    Photo = Column(String(100))
+    Province = Column(String(25))
+    District = Column(String(25))
+    City = Column(String(50))
+    Area = Column(String(200))
+    AdditionalDes = Column(String(1000))
+    Landmark = Column(String(150))
+    HouseNoOrName = Column(String(100))
 
 # # Define the CriminalOrSuspect model
 # class CriminalOrSuspect(Base):
@@ -84,26 +86,26 @@ class User(Base):
 #     CrimeID = Column(String(50), ForeignKey('Crime.CrimeID'), primary_key=True)
 
 # # Define the Photos model
-# class Photos(Base):
-#     __tablename__ = 'Photos'
+class Photos(Base):
+    __tablename__ = 'Photos'
 
-#     PhotoID = Column(String(110), primary_key=True)
-#     PhotoType = Column(String(13))
-#     PhotoPath = Column(String(180))
+    PhotoID = Column(String(110), primary_key=True)
+    PhotoType = Column(String(13))
+    PhotoPath = Column(String(180))
 
 # # Define the CrimePhoto model
-# class CrimePhoto(Base):
-#     __tablename__ = 'CrimePhoto'
+class CrimePhoto(Base):
+    __tablename__ = 'CrimePhoto'
 
-#     PhotoID = Column(String(110), ForeignKey('Photos.PhotoID'), primary_key=True)
-#     CrimeID = Column(String(50), ForeignKey('Crime.CrimeID'), primary_key=True)
+    PhotoID = Column(String(110), ForeignKey('Photos.PhotoID'), primary_key=True)
+    CrimeID = Column(String(50), ForeignKey('Crime.CrimeID'), primary_key=True)
 
 # # Define the PersonPhoto model
-# class PersonPhoto(Base):
-#     __tablename__ = 'PersonPhoto'
+class PersonPhoto(Base):
+    __tablename__ = 'PersonPhoto'
 
-#     PhotoID = Column(String(110), ForeignKey('Photos.PhotoID'), primary_key=True)
-#     PersonID = Column(String(100), ForeignKey('Person.PersonID'), primary_key=True)
+    PhotoID = Column(String(110), ForeignKey('Photos.PhotoID'), primary_key=True)
+    PersonID = Column(String(100), ForeignKey('Person.PersonID'), primary_key=True)
 
 # # Define the EvidencePhoto model
 # class EvidencePhoto(Base):

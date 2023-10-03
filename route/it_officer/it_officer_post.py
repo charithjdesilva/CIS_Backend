@@ -42,7 +42,7 @@ async def create_user(
     Area : Annotated[str, Form()]= None,
     Position : Annotated[str , Form()] = None,
     HouseNoOrName :Annotated[str , Form()] = None,
-    JoinedDate : Annotated[str, Form()] = None,
+    JoinedDate : Annotated[str, Form(description="Enter YYYY-MM-DD Format")] = None,
     Photo : UploadFile = common_users_image,
 
 ):
@@ -86,69 +86,82 @@ async def create_user(
     except Exception as e :
         error_message = str(e)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
-    
-        
-    
-
-    
 
 
-    
-
-
-    return status.HTTP_200_OK
-
-
-@router.patch('/update-user/{id}')
+@router.patch('/update-user/{id}' ,description="Only update the relevant fields ")
 async def update_user(
+    db: db_dependency,
     id : Annotated[str, Path()],
-    NIC : Annotated[str, Form()]= None,
-    First_Name : Annotated[str, Form()]= None,
-    Last_Name : Annotated[str, Form()]= None,
-    Tel_No : Annotated[str, Form()]= None,
-    Province : Annotated[str , Form()]= None,
-    City : Annotated[str, Form()]= None,
+    RegNo : Annotated[str , Form()] = None,
+    NIC : Annotated[str, Form()] = None,
+    FirstName : Annotated[str, Form()] = None,
+    LastName : Annotated[str, Form()] = None,
+    Tel_No : Annotated[str, Form(description="can be maximum 10 characters")] = None,
+    Branch : Annotated[str, Form(description=" branch can be null because, some times a user cannot be associated with a branch such as while training")] = None,
+    Province : Annotated[str , Form()] = None,
+    District : Annotated[str, Form()] = None,
+    City : Annotated[str, Form()] = None,
     Area : Annotated[str, Form()]= None,
-    Address : Annotated[str, Form()]= None,
-    Branch : Annotated[str, Form()]= None,
-    Position : Annotated[str , Form()]= None,
-    Join_Date : Annotated[str, Form()]= None,
-    photo_of_user : UploadFile = common_users_image
+    Position : Annotated[str , Form()] = None,
+    HouseNoOrName :Annotated[str , Form()] = None,
+    JoinedDate : Annotated[str, Form(description="Enter YYYY-MM-DD Format")] = None,
+    Photo : UploadFile = File(default=common_users_image),
 
 ):
-    for userIn in users:
-        if userIn['Reg_No'] == id :
-            if NIC:
-                userIn['NIC'] = NIC
-            if First_Name:
-                userIn['First_Name'] = First_Name
-            if Last_Name:
-                userIn['Last_Name'] = Last_Name
-            if Province:
-                userIn['Province'] = Province
-            if City:
-                userIn['City'] = City
-            if Area:
-                userIn['Area'] = Area
-            if Address:
-                userIn['Address'] = Address
-            if Position:
-                userIn['Position'] = Position
-            if Join_Date:
-                userIn['Join_Date'] = Join_Date
-            if Branch:
-                userIn['Branch'] = Branch
-            # if photo_of_user != UPLOAD_DIR / 'avatar.png' and photo_of_user != userIn['photo_of_user'] :
-            #     data = await photo_of_user.read()
-            #     save_to = UPLOAD_DIR / photo_of_user.filename
-            #     userIn['photo_of_user'] = save_to
-            #     with open(save_to , 'wb') as f:
-            #         f.write(data)
-                
+    user = db.query(User).filter(User.NIC == id or User.RegNo == id).first()
+    print(user)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
 
-            return status.HTTP_200_OK
-        
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f" id - {id} is not found")
+    if RegNo is not None:
+        user.RegNo = RegNo
+
+    if NIC is not None:
+        user.NIC = NIC
+
+    if FirstName is not None:
+        user.FirstName = FirstName
+
+    if LastName is not None:
+        user.LastName = LastName
+
+    if Tel_No is not None:
+        user.Tel_No = Tel_No
+
+    if Province is not None:
+        user.Province = Province
+
+    if City is not None:
+        user.City = City
+
+    if Area is not None:
+        user.Area = Area
+
+    if Branch is not None:
+        user.Branch = Branch
+
+    if Position is not None:
+        user.Position = Position
+
+    if JoinedDate is not None:
+        join_date = datetime.strptime(JoinedDate, '%Y-%m-%d')
+        user.JoinedDate = join_date
+
+
+    if Photo != common_users_image:
+        data = await Photo.read()
+        name, extension = os.path.splitext(Photo.filename)
+        if user.Photo != UPLOAD_USER / f"{user.NIC}_{user.RegNo}{extension}":
+            save_to = UPLOAD_USER / f"{user.NIC}_{user.RegNo}{extension}"
+            with open(save_to, 'wb') as f:
+                f.write(data)
+            user.Photo = save_to
+        else:
+            return{'message' : "Photo already uploaded"}
+
+    db.commit()
+    db.refresh(user)
+    return {"message": "User updated successfully"}
 
 
 @router.patch('/update-criminal/{id}')
