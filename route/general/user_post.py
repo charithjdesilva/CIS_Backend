@@ -8,7 +8,7 @@ from Security.password import is_valid_password,is_valid_email,is_valid_sri_lank
 from schemas import LoginCredentials, SendCodeBase , Send4DigitCode , Question , Query
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import Optional
-from Security.password import hash_password,verify_password
+from Security.password import do_hash_password,verify_password
 from dummydata import user_login,code_in_four_digit, user_question_table , user_query_table
 import random
 from Security.user_defined_datatypes import SriLankaMobileNumber

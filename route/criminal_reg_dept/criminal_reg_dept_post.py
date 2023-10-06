@@ -11,7 +11,7 @@ from dummydata import victims,crimes,evidences,criminals
 from Security.password import is_valid_password
 from Images.path import UPLOAD_CRIME, UPLOAD_VICTIM, UPLOAD_EVIDENCE, UPLOAD_CRIMINAL
 from Images.path import common_crime_image,common_criminal_image,common_evidence_image,common_victim_image
-from models import Crime,Photos,CrimePhoto,Person,PersonPhoto
+from models import Crime,Photos,CrimePhoto,Person,PersonPhoto,Evidence,EvidencePhoto,CriminalOrSuspect,CrimeCriminal
 from database import db_dependency
 
 
@@ -105,20 +105,20 @@ async def register_crime(
     
 
 #Register Victim
-#pending = add to database
+#add the database = doubt
 @router.post('/register-victim')
 async def register_victim(
+    db : db_dependency,
     CrimeID : Annotated[int, Form()],
-    LifeStatus : Annotated[str, Form()],
     NIC : Annotated[str, Form()],
     FirstName : Annotated[str , Form()],
     LastName : Annotated[str, Form()],
-    PhoneNo : Annotated[str, Form()],
-    Branch : Annotated[str, Form()],
-    Province : Annotated[str, Form()],
-    District : Annotated[str, Form()],
-    City : Annotated[str, Form()],
-    Area : Annotated[str, Form()],
+    LifeStatus : Annotated[str, Form()] = None,
+    PhoneNo : Annotated[str, Form()] = None,
+    Province : Annotated[str, Form()] = None,
+    District : Annotated[str, Form()] = None,
+    City : Annotated[str, Form()] = None,
+    Area : Annotated[str, Form()] = None,
     Landmark : Annotated[str|None, Form()] = None,
     HouseNoOrName : Annotated[str , Form()] = None,
     AdditionalDes : Annotated[str|None , Form()] = None,
@@ -135,12 +135,11 @@ async def register_victim(
             f.write(data)
 
     victim = Person(
-        PersonID = f"{CrimeID}_{NIC}",
+        PersonID = f"{NIC}_{CrimeID}",
         NIC = NIC,
         FirstName = FirstName,
         LastName = LastName,
         PhoneNo = PhoneNo,
-        Branch = Branch,
         PersonType = "Victim",
         LifeStatus = LifeStatus,
         Province = Province,
@@ -154,15 +153,34 @@ async def register_victim(
     )
     
     photo_all = Photos(
-       PhotoID =  f"{CrimeID}_{NIC}",
+       PhotoID =  NIC,
        PhotoType = "Victim",
        PhotoPath = save_to
     )
 
     person_photo = PersonPhoto(
-        PhotoID = f"{CrimeID}_{NIC}",
+        PhotoID = NIC,
         PersonID = f"{CrimeID}_{NIC}"
     )
+
+
+    try:
+        db.add(victim)
+        db.commit()
+        db.refresh(victim)
+
+        db.add(photo_all)
+        db.commit()
+        db.refresh(photo_all)
+
+        db.add(person_photo)
+        db.commit()
+        db.refresh(person_photo)
+
+        return {"message": "Victim Registered Successfully"}
+    except Exception as e :
+        error_message = str(e)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
 
 
     
@@ -176,76 +194,148 @@ async def register_victim(
 #pending = add to database
 @router.post('/register-evidence')
 async def register_evidence(
-    crime_id : Annotated[int , Form()],
-    evidence_id : Annotated[int , Form()],
+    db : db_dependency,
+    CrimeID : Annotated[int , Form()],
+    EvidenceID : Annotated[int , Form()],
     photo_of_evidence : UploadFile  = common_evidence_image,
-    testimonials : Annotated[str | None, Form()] = "",
+    Testimonials : Annotated[str | None, Form()] = "",
 ):
-    evidence = {
-        "crime_id" : crime_id,
-        "evidence_id" : evidence_id,
-        "photo_of_evidence" : photo_of_evidence,
-        "testimonials" : testimonials
-    }
-
+    
     if photo_of_evidence != common_evidence_image:
         data = await photo_of_evidence.read()
         name , extension = os.path.splitext(photo_of_evidence.filename)
-        save_to = UPLOAD_EVIDENCE / f"{crime_id}_{evidence_id}{extension}"
-        evidence['photo_of_evidence'] = save_to
+        save_to = UPLOAD_EVIDENCE / f"{CrimeID}_{EvidenceID}{extension}"
         with open(save_to , 'wb') as f:
             f.write(data)
+    
+    save_to = common_victim_image
 
-    evidences.append(evidence)
-    return evidences
+    evidence_details = Evidence(
+        EvidenceID = EvidenceID,
+        Testimonials = Testimonials
+    )
+
+    photo_all = Photos(
+        PhotoID   =  EvidenceID,
+        PhotoType =  "Evidence",
+        PhotoPath =  save_to
+    )
+
+    evidence_photo = EvidencePhoto(
+        PhotoID = EvidenceID,
+        EvidenceID = EvidenceID
+    )
+    
+    try:
+        db.add(evidence_details)
+        db.commit()
+        db.refresh(evidence_details)
+
+        db.add(photo_all)
+        db.commit()
+        db.refresh(photo_all)
+
+        db.add(evidence_photo)
+        db.commit()
+        db.refresh(evidence_photo)
+
+        return {"message": "Evidence Registered Successfully"}
+    except Exception as e :
+        error_message = str(e)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+
 
 #Register CriminalOrSuspect
 # Pending Work - add to database
 @router.post('/register-CriminalOrSuspect')
 async def register_crim_suspect(
+    db : db_dependency,
     crime_id : Annotated[int , Form()],
-    life_status : Annotated[str , Form()],
-    in_custody : Annotated[str, Form()],
-    crime_justified : Annotated[str , Form()],
-    nic : Annotated[str , Form()],
-    first_name : Annotated[str, Form()],
-    last_name : Annotated[str , Form()],
-    tel_no : Annotated[str, Form()],
-    province : Annotated[str , Form()],
-    city : Annotated[str | None, Form()] = "",
-    area : Annotated[str | None, Form()] = "",
-    address : Annotated[str | None, Form()] = "",
-    landmark : Annotated[str | None , Form()]= "",
+    LifeStatus : Annotated[str , Form()],
+    InCustody : Annotated[bool, Form()],
+    CrimeJustified : Annotated[bool , Form()],
+    NIC : Annotated[str , Form()],
+    FirstName : Annotated[str, Form()],
+    LastName : Annotated[str , Form()],
+    PhoneNo : Annotated[str, Form()],
+    Province : Annotated[str , Form()],
+    City : Annotated[str | None, Form()] = "",
+    Area : Annotated[str | None, Form()] = "",
+    District : Annotated[str | None, Form()] = "",
+    Landmark : Annotated[str | None , Form()]= "",
+    AdditionalDes : Annotated[str | None, Form()] = "",
+    HouseNoOrName : Annotated[str | None, Form()] = "",
     photo_criminal : UploadFile  =  common_criminal_image,
-    add_to_crimes : Annotated[list[str],Form()] = []  
 ):
-    crim_suspect = {
-        "crime_id" : crime_id,
-        "life_status" : life_status,
-        "in_custody" : in_custody,
-        "crime_justified" : crime_justified,
-        "nic" : nic,
-        "first_name" : first_name,
-        "last_name" : last_name,
-        "tel_no" : tel_no,
-        "province" : province,
-        "city" : city,
-        "area" : area,
-        "address" : address,
-        "landmark" : landmark,
-        "photo_criminal" : photo_criminal,
-        "add_to_crimes" : [crime for crime in add_to_crimes]
-
-    }
+    
+    save_to = common_criminal_image
 
     if photo_criminal != common_criminal_image:
         data = await photo_criminal.read()
         name , extension = os.path.splitext(photo_criminal.filename)
-        save_to = UPLOAD_CRIMINAL / f"{nic}_{crime_id}_{life_status}{extension}"
-        print(save_to)
-        crim_suspect['photo_criminal'] = save_to
+        save_to = UPLOAD_CRIMINAL / f"{NIC}_{crime_id}_{extension}"
         with open(save_to , 'wb') as f:
             f.write(data)
 
-    criminals.append(crim_suspect)
-    return criminals
+    criminal = Person(
+       PersonID =  NIC,
+       NIC = NIC,
+       FirstName = FirstName,
+       LastName = LastName,
+       PhoneNo = PhoneNo,
+       PersonType = "Criminal or Suspect",
+       LifeStatus = LifeStatus,
+       Province = Province,
+       District = District,
+       City = City,
+       Area = Area,
+       AdditionalDes = AdditionalDes,
+       Landmark = Landmark,
+       HouseNoOrName =  HouseNoOrName
+
+    )
+
+    photo_sever = Photos(
+        PhotoID = NIC,
+        PhotoType = "Criminal or Suspect",
+        PhotoPath = common_criminal_image
+    )
+
+    photo_criminal = PersonPhoto(
+        PhotoID = NIC,
+        PersonID = NIC
+    )
+
+    criminal_suspect = CriminalOrSuspect(
+        InCustody = InCustody,
+        CrimeJustified = CrimeJustified,
+        NIC = NIC,
+    )
+
+    crime_criminal = CrimeCriminal(
+        NIC = NIC,
+        CrimeID = crime_id
+    )
+
+    
+    try:
+        db.add(criminal)
+        db.commit()
+        db.refresh(criminal)
+
+        db.add(photo_sever)
+        db.commit()
+        db.refresh(photo_sever)
+
+        db.add(criminal_suspect)
+        db.commit()
+        db.refresh(criminal_suspect)
+
+        db.add(crime_criminal)
+        db.commit()
+        db.refresh(crime_criminal)
+
+        return {"message": "Criminal or Suspect Registered Successfully"}
+    except Exception as e :
+        error_message = str(e)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")

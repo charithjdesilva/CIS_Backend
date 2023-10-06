@@ -1,4 +1,4 @@
-from Security.password import hash_password,verify_password
+from Security.password import do_hash_password,verify_password
 from pathlib import Path
 
 UPLOAD_DIR = Path() / 'users_image'
@@ -53,7 +53,7 @@ for i in range(1,21):
     user = {
         "username" : f"user{i}",
         "password" : f"pasword{i}",
-        "hash_password" : hash_password(f"password{i}")
+        "hash_password" : do_hash_password(f"password{i}")
     }
     user_login.append(user)
 

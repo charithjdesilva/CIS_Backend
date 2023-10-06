@@ -8,3 +8,17 @@ IT Officer Section
 Police Officer
 
 1. Can we search criminal using name in search page
+
+
+Doubt in figma design and erd
+
+Person class field not suitable for criminal and victim
+
+
+Register Evidence , Register criminalorsuspect erd vs figma design
+
+
+Criminal or suspect figma design - Need AdditionalDes field
+
+
+

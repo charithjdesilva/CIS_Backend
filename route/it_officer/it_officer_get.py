@@ -1,7 +1,11 @@
 from typing import List,Annotated
-from fastapi import APIRouter,Path,HTTPException,status
+from fastapi import APIRouter, Depends,Path,HTTPException,status
+from sqlalchemy.orm import Session
+
 from dummydata import users
-from schemas import UserBase
+from database import db_dependency
+from models import User
+
 
 router = APIRouter(
     prefix="/it-officer",
@@ -10,7 +14,8 @@ router = APIRouter(
 
 
 @router.get("/view/all-users")
-def show_user_details():
+def show_user_details(db:db_dependency):
+    users = db.query(User).all()
     return users
 
 @router.get('/search-user/{id}')

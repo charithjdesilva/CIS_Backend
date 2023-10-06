@@ -11,7 +11,7 @@ random_code_str = str(random_code)
 
 # print("Random 4-Digit Code:", random_code_str)
 
-def hash_password(password: str) -> str:
+def do_hash_password(password: str) -> str:
     # Generate a salt and hash the password
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
