@@ -1,0 +1,10 @@
+1. Update crime , evidence , victim , criminal or suspect 
+2. Authentication and authorization
+3. get all crime , get crime by crimeId
+4. get all evidences , get evidence by evidence_id
+5. 
+
+
+forget password
+sms notification
+NIC Validation

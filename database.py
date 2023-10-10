@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi import Depends
 
 
-URL_DATABASE = 'mysql+pymysql://root:Samsung123_@localhost:3306/criminalrecsystem'
+URL_DATABASE = 'mysql+pymysql://root:Samsung123_@localhost:3306/criminal_iden_system'
 
 engine = create_engine(URL_DATABASE)
 

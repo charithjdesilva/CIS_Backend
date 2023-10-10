@@ -1,6 +1,8 @@
 from fastapi import File,UploadFile
 from pydantic import BaseModel,Field, EmailStr
 from typing import Annotated, Union
+from datetime import date
+
 
 # class UserDisplay(BaseModel):
 
@@ -12,8 +14,8 @@ class LoginOut(BaseModel):
     username : str
     hashed_password : str
 
-class Image(BaseModel):
-    photo_of_criminal : str
+# class Image(BaseModel):
+    
 
 class UserBase(BaseModel):
     Reg_No : str = Field(description="Enter the user registration Number")
@@ -71,3 +73,22 @@ class Query(BaseModel):
 
 # class Images(BaseModel):
 #     photo_of_criminal : Annotated[list[UploadFile], File()]
+
+
+
+class UserDisplay(BaseModel):
+    RegNo : str
+    NIC : str
+    FirstName : str
+    LastName : str
+    Tel_No : str | None
+    Branch : str | None
+    UserType : str | None
+    JoinedDate : date | None
+    Position : str | None
+    Province : str | None 
+    District : str | None
+    City : str | None
+    Area : str | None
+    HouseNoOrName : str | None
+

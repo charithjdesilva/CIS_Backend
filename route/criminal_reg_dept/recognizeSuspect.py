@@ -11,7 +11,7 @@ app = FastAPI()
 
 router = APIRouter(
     prefix="/criminal-reg-dept",
-    tags=['criminal registration department section']
+    tags=['criminal registration department section - Facial Recognition and Image Processing']
 )
 
 # List of supported image file extensions

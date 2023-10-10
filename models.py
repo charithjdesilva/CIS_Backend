@@ -11,12 +11,13 @@ class User(Base):
     NIC = Column(String(12), unique=True, nullable=False)
     FirstName = Column(String(50), nullable=False)
     LastName = Column(String(50), nullable=False)
-    Tel_No = Column(String(10))
+    Email = Column(String(500) , nullable=False)
+    Tel_No = Column(String(12))
     Branch = Column(String(50))
     UserType = Column(String(15))
     JoinedDate = Column(Date)
     Position = Column(String(50))
-    Photo = Column(String(100))
+    Photo = Column(String(260))
     Province = Column(String(25))
     District = Column(String(25))
     City = Column(String(50))
@@ -30,7 +31,7 @@ class User(Base):
 class Crime(Base):
     __tablename__ = 'Crime'
 
-    CrimeID = Column(String(50), primary_key=True)
+    CrimeID = Column(String(100), primary_key=True)
     CrimeType = Column(String(50))
     CrimeDate = Column(Date)
     CrimeTime = Column(String(50))
@@ -46,8 +47,10 @@ class Crime(Base):
 class Evidence(Base):
     __tablename__ = 'Evidence'
 
-    EvidenceID = Column(String(50), primary_key=True)
+    EvidenceID = Column(String(100), primary_key=True)
     Testimonials = Column(String(500))
+    CrimeID = Column(String(100), ForeignKey('Crime.CrimeID'))
+
 
 # Person model
 class Person(Base):
@@ -57,8 +60,8 @@ class Person(Base):
     NIC = Column(String(12))
     FirstName = Column(String(50), nullable=False)
     LastName = Column(String(50), nullable=False)
-    PhoneNo = Column(String(10))
-    PersonType = Column(String(15))
+    PhoneNo = Column(String(12))
+    PersonType = Column(String(100))
     LifeStatus = Column(String(5))
     Province = Column(String(25))
     District = Column(String(25))
@@ -67,6 +70,7 @@ class Person(Base):
     AdditionalDes = Column(String(1000))
     Landmark = Column(String(150))
     HouseNoOrName = Column(String(100))
+    CrimeID = Column(String(100), ForeignKey('Crime.CrimeID'))
 
 # CriminalOrSuspect model
 class CriminalOrSuspect(Base):
@@ -81,23 +85,23 @@ class CriminalOrSuspect(Base):
 class CrimeCriminal(Base):
     __tablename__ = 'CrimeCriminal'
 
-    PersonID = Column(String(12), ForeignKey('Person.PersonID'), primary_key=True)
-    CrimeID = Column(String(50), ForeignKey('Crime.CrimeID'), primary_key=True)
+    PersonID = Column(String(100), ForeignKey('Person.PersonID'), primary_key=True)
+    CrimeID = Column(String(100), ForeignKey('Crime.CrimeID'), primary_key=True)
 
 # Photos model
 class Photos(Base):
     __tablename__ = 'Photos'
 
     PhotoID = Column(String(110), primary_key=True)
-    PhotoType = Column(String(13))
-    PhotoPath = Column(String(180))
+    PhotoType = Column(String(100))
+    PhotoPath = Column(String(250))
 
 # CrimePhoto model
 class CrimePhoto(Base):
     __tablename__ = 'CrimePhoto'
 
     PhotoID = Column(String(110), ForeignKey('Photos.PhotoID'), primary_key=True)
-    CrimeID = Column(String(50), ForeignKey('Crime.CrimeID'), primary_key=True)
+    CrimeID = Column(String(100), ForeignKey('Crime.CrimeID'), primary_key=True)
 
 # PersonPhoto model
 class PersonPhoto(Base):
@@ -111,6 +115,6 @@ class EvidencePhoto(Base):
     __tablename__ = 'EvidencePhoto'
 
     PhotoID = Column(String(110), ForeignKey('Photos.PhotoID'), primary_key=True)
-    EvidenceID = Column(String(50), ForeignKey('Evidence.EvidenceID'), primary_key=True)
+    EvidenceID = Column(String(100), ForeignKey('Evidence.EvidenceID'), primary_key=True)
 
 

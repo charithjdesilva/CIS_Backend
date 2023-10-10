@@ -5,20 +5,13 @@ IT Officer Section
 3. update criminal page
 
 
-Police Officer
+Crim Reg Dept
 
-1. Can we search criminal using name in search page
-
-
-Doubt in figma design and erd
-
-Person class field not suitable for criminal and victim
+Doubt - Register Criminal and Suspect 
 
 
-Register Evidence , Register criminalorsuspect erd vs figma design
 
 
-Criminal or suspect figma design - Need AdditionalDes field
 
 
 

@@ -5,7 +5,7 @@ from recognizeCriminal import encodeImages, findEncodings
 
 router = APIRouter(
     prefix="/criminal-reg-dept",
-    tags=['criminal registration department section']
+    tags=['criminal registration department section - Facial Recognition and Image Processing']
 )
 
 SUPPORTED_EXTENSIONS = {".jpg", ".jpeg", ".png"}

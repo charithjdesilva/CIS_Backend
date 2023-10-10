@@ -15,6 +15,8 @@ from Images.path import UPLOAD_USER, UPLOAD_CRIMINAL
 from Images.path import common_users_image, common_criminal_image
 from models import User
 from Security.password import do_hash_password
+from models import Crime,Photos,CrimePhoto,Person,PersonPhoto,Evidence,EvidencePhoto,CriminalOrSuspect,CrimeCriminal
+
 
 from Images.image_upload import upload_user_image
 
@@ -56,9 +58,14 @@ async def create_user(
     if Photo != common_users_image :
         data = await Photo.read()
         name , extension = os.path.splitext(Photo.filename)
-        save_to = UPLOAD_USER / f"{NIC}_{RegNo}{extension}"
+        save_to = UPLOAD_USER / f"{NIC}{extension}"
         with open(save_to , 'wb') as f:
             f.write(data)
+
+    
+    
+
+    
 
     # save_to = await upload_user_image(Photo, RegNo)
 
@@ -74,7 +81,6 @@ async def create_user(
         UserType = UserType,
         JoinedDate = joined_date,
         Position = Position,
-        Photo = save_to,
         Province=Province,
         District=District,
         City=City,
@@ -82,6 +88,12 @@ async def create_user(
         HouseNoOrName=HouseNoOrName,
         PasswordHash = hashed_password
     )
+
+    if save_to == common_users_image:
+        user.Photo = None
+
+    
+
 
     try:
         db.add(user)
@@ -93,7 +105,7 @@ async def create_user(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
 
 
-@router.patch('/update-user/{id}' ,description="Only update the relevant fields ")
+@router.patch('/update-user/{id:path}' ,description="Only update the relevant fields ")
 async def update_user(
     db: db_dependency,
     id : Annotated[str, Path(description="Enter Registration Number of the User")],
@@ -113,9 +125,9 @@ async def update_user(
 
 ):
     user = db.query(User).filter(User.RegNo == id).first()
-    print(user)
+
     if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail=f"User not found")
 
 
     if NIC is not None:
@@ -132,6 +144,12 @@ async def update_user(
 
     if Province is not None:
         user.Province = Province
+
+    if District is not None:
+        user.District = District
+
+    if HouseNoOrName is not None:
+        user.HouseNoOrName = HouseNoOrName
 
     if City is not None:
         user.City = City
@@ -150,13 +168,32 @@ async def update_user(
         user.JoinedDate = join_date
 
 
+    # if Photo != common_users_image:
+    #     data = await Photo.read()
+    #     name, extension = os.path.splitext(Photo.filename)
+    #     save_to = UPLOAD_USER / f"{user.RegNo}{extension}"
+    #     with open(save_to, 'wb') as f:
+    #         f.write(data)
+    #     user.Photo = save_to
+
     if Photo != common_users_image:
         data = await Photo.read()
         name, extension = os.path.splitext(Photo.filename)
-        save_to = UPLOAD_USER / f"{user.NIC}_{user.RegNo}{extension}"
-        with open(save_to, 'wb') as f:
+        new_photo_filename = f"{user.RegNo}{extension}"
+        new_photo_path = UPLOAD_USER / new_photo_filename
+
+        # Check if the existing photo in the database contains the RegNo
+        if user.Photo and user.RegNo in user.Photo:
+            # If it contains, construct the old photo path and delete it
+            old_photo_filename = user.Photo.split('\\')[-1]
+            print("old photo name :", old_photo_filename, user.Photo.split('\\'))
+            old_photo_path = UPLOAD_USER / old_photo_filename
+            if old_photo_path.exists():
+                old_photo_path.unlink()
+        
+        with open(new_photo_path, 'wb') as f:
             f.write(data)
-        user.Photo = save_to
+        user.Photo = str(new_photo_path)
 
 
     # save_to = await upload_user_image(Photo, user.RegNo)
@@ -169,23 +206,107 @@ async def update_user(
     return {"message": "User updated successfully"}
 
 
-# @router.patch('/update-criminal/{id}')
-# def update_criminal(
-#     id : Annotated[str, Path()],
-#     NIC : Annotated[str, Form()]= None,
-#     First_Name : Annotated[str, Form()]= None,
-#     Last_Name : Annotated[str, Form()]= None,
-#     Tel_No : Annotated[str, Form()]= None,
-#     Province : Annotated[str , Form()]= None,
-#     City : Annotated[str, Form()]= None,
-#     Area : Annotated[str, Form()]= None,
-#     Address : Annotated[str, Form()]= None,
-#     Landmark : Annotated[str, Form()] = None,
-#     Photo_Of_Criminal : UploadFile = common_criminal_image
+
+# @router.post('/CriminalOrSuspect/Update/{id}')
+# async def register_crim_suspect(
+#     db : db_dependency,
+#     id : Annotated[str, Path(description = "enter person id")],
+#     CrimeID : Annotated[int , Form()] = None,
+#     LifeStatus : Annotated[str , Form()] = None,
+#     InCustody : Annotated[bool, Form()] = None,
+#     CrimeJustified : Annotated[bool , Form()] = None,
+#     NIC : Annotated[str , Form()] = None,
+#     FirstName : Annotated[str, Form()] = None,
+#     LastName : Annotated[str , Form()] = None,
+#     PhoneNo : Annotated[str, Form()] = None,
+#     Province : Annotated[str , Form()] = None,
+#     City : Annotated[str, Form()] = None,
+#     Area : Annotated[str, Form()] = None,
+#     District : Annotated[str, Form()] = None,
+#     Landmark : Annotated[str , Form()]= None,
+#     AdditionalDes : Annotated[str, Form()] = None,
+#     HouseNoOrName : Annotated[str , Form()] = None,
+#     photo_criminal : UploadFile  =  common_criminal_image,
 # ):
-#     return "Confusion"
+    
+#     save_to = common_criminal_image
+
+#     if photo_criminal != common_criminal_image:
+#         data = await photo_criminal.read()
+#         name , extension = os.path.splitext(photo_criminal.filename)
+#         save_to = UPLOAD_CRIMINAL / f"{id}{extension}"
+#         with open(save_to , 'wb') as f:
+#             f.write(data)
+    
+
+
+#     criminal = Person(
+#        CrimeID = CrimeID,
+#        PersonID =  NIC,
+#        NIC = NIC,
+#        FirstName = FirstName,
+#        LastName = LastName,
+#        PhoneNo = PhoneNo,
+#        PersonType = "Criminal or Suspect",
+#        LifeStatus = LifeStatus,
+#        Province = Province,
+#        District = District,
+#        City = City,
+#        Area = Area,
+#        AdditionalDes = AdditionalDes,
+#        Landmark = Landmark,
+#        HouseNoOrName =  HouseNoOrName
+
+#     )
+
+#     photo_sever = Photos(
+#         PhotoID = PersonID,
+#         PhotoType = "Criminal or Suspect",
+#         PhotoPath = save_to if save_to else None
+#     )
+
+#     photo_criminal = PersonPhoto(
+#         PhotoID = PersonID,
+#         PersonID = PersonID
+#     )
+
+#     criminal_suspect = CriminalOrSuspect(
+#         InCustody = InCustody,
+#         CrimeJustified = CrimeJustified,
+#         NIC = NIC,
+#         PersonID = PersonID
+#     )
+
+#     crime_criminal = CrimeCriminal(
+#         PersonID = PersonID,
+#         CrimeID = CrimeID
+#     )
 
     
+#     try:
+#         db.add(criminal)
+#         db.commit()
+#         db.refresh(criminal)
+
+#         db.add(photo_sever)
+#         db.commit()
+#         db.refresh(photo_sever)
+
+#         db.add(criminal_suspect)
+#         db.commit()
+#         db.refresh(criminal_suspect)
+
+#         db.add(crime_criminal)
+#         db.commit()
+#         db.refresh(crime_criminal)
+
+#         return {"message": "Criminal or Suspect Registered Successfully"}
+#     except Exception as e :
+#         error_message = str(e)
+#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+
+
+
     
     
 

@@ -144,5 +144,32 @@
 # print(random_dicts)
 
 
+# # The string to search in
+# full_string = r"Images\users_image\924564581V_CRM0003.jpeg"
+
+# # The substring to check for
+# substring = "CRM0003"
+
+# # Check if the substring exists in the full string
+# if substring in full_string:
+#     print(f"'{substring}' is present in '{full_string}'.")
+# else:
+#     print(f"'{substring}' is not present in '{full_string}'.")
+
+base_url = "http://127.0.0.1:8000"  # Replace with your actual base URL
+file_path = "Images\\victim_images\\VID_2020_10_V1.jpeg"  # Replace with your actual file path
+
+# Convert backslashes to forward slashes and remove leading slashes
+file_path = file_path.replace("\\", "/").lstrip("/")
+
+# Combine the base URL and file path to create the complete URL
+url = f"{base_url}/{file_path}"
+
+print(url)
+
+def make_image_url(file_path : str):
+    file_path = file_path.replace("\\", "/").lstrip("/")
+    return f"{base_url}/{file_path}"
+
 
 
