@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body,Form,File, Query,UploadFile,Path,HTTPException,status
+from fastapi import APIRouter, Body, Depends,Form,File, Query,UploadFile,Path,HTTPException,status
 from fastapi.encoders import jsonable_encoder
 from typing import Annotated
 from pydantic import BaseModel
@@ -16,6 +16,7 @@ from Images.path import common_users_image, common_criminal_image
 from models import User
 from Security.password import do_hash_password
 from models import Crime,Photos,CrimePhoto,Person,PersonPhoto,Evidence,EvidencePhoto,CriminalOrSuspect,CrimeCriminal
+from auth import get_current_active_user
 
 
 from Images.image_upload import upload_user_image
@@ -23,7 +24,8 @@ from Images.image_upload import upload_user_image
 
 router = APIRouter(
     prefix="/it-officer",
-    tags=['IT Officer Section']
+    tags=['IT Officer Section'],
+    # dependencies=[Depends(get_current_active_user)]
 )
 
 
@@ -35,6 +37,7 @@ async def create_user(
     NIC : Annotated[str, Form()],
     FirstName : Annotated[str, Form()],
     LastName : Annotated[str, Form()],
+    Email : Annotated[str, Form()],
     Password : Annotated[str, Form(min_length=8,max_length=256, description="Default dummy password included, if not include password")] = "12345678",
     Tel_No : Annotated[str, Form(description="can be maximum 10 characters")] = None,
     Branch : Annotated[str, Form(description=" branch can be null because, some times a user cannot be associated with a branch such as while training")] = None,
@@ -78,6 +81,7 @@ async def create_user(
         LastName = LastName,
         Tel_No = Tel_No,
         Branch = Branch,
+        Email = Email,
         UserType = UserType,
         JoinedDate = joined_date,
         Position = Position,

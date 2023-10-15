@@ -14,6 +14,16 @@ class LoginOut(BaseModel):
     username : str
     hashed_password : str
 
+class UserIn(BaseModel):
+    username : str
+    email : str
+    full_name : str
+    type : str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
 # class Image(BaseModel):
     
 

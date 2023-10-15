@@ -8,6 +8,7 @@ from dummydata import users
 from database import db_dependency
 from models import User
 from schemas import UserDisplay
+from auth import get_current_user
 
 
 router = APIRouter(
@@ -17,9 +18,8 @@ router = APIRouter(
 
 
 @router.get("/user/all" , response_model=List[UserDisplay])
-def show_user_details(db:db_dependency):
+def show_user_details(db:db_dependency,current_user: dict = Depends(get_current_user)):
     users = db.query(User).all()
-    # print(type(users[1].JoinedDate), users[1].JoinedDate)
     return users
 
 @router.get('/user/image/{id:path}')
