@@ -9,6 +9,8 @@ random_code = random.randint(1000, 9999)
 # Convert the code to a string (if needed)
 random_code_str = str(random_code)
 
+# print(random_code_str)
+
 # print("Random 4-Digit Code:", random_code_str)
 
 def do_hash_password(password: str) -> str:

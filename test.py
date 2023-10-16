@@ -156,20 +156,32 @@
 # else:
 #     print(f"'{substring}' is not present in '{full_string}'.")
 
-base_url = "http://127.0.0.1:8000"  # Replace with your actual base URL
-file_path = "Images\\victim_images\\VID_2020_10_V1.jpeg"  # Replace with your actual file path
+# base_url = "http://127.0.0.1:8000"  # Replace with your actual base URL
+# file_path = "Images\\victim_images\\VID_2020_10_V1.jpeg"  # Replace with your actual file path
 
-# Convert backslashes to forward slashes and remove leading slashes
-file_path = file_path.replace("\\", "/").lstrip("/")
+# # Convert backslashes to forward slashes and remove leading slashes
+# file_path = file_path.replace("\\", "/").lstrip("/")
 
-# Combine the base URL and file path to create the complete URL
-url = f"{base_url}/{file_path}"
+# # Combine the base URL and file path to create the complete URL
+# url = f"{base_url}/{file_path}"
 
-print(url)
+# # print(url)
 
-def make_image_url(file_path : str):
-    file_path = file_path.replace("\\", "/").lstrip("/")
-    return f"{base_url}/{file_path}"
+# def make_image_url(file_path : str):
+#     file_path = file_path.replace("\\", "/").lstrip("/")
+#     return f"{base_url}/{file_path}"
+
+
+from urllib.parse import urlparse
+import os
+
+url = "http://127.0.0.1:8000/Images/crime_images/CR_2020_10_C3.jpg"
+parsed_url = urlparse(url)
+filename = os.path.basename(parsed_url.path)
+
+print(filename)
+print(url.split('/')[-1])
+
 
 
 

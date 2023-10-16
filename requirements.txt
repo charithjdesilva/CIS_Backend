@@ -17,3 +17,4 @@ opencv-python
 python-dotenv
 pymysql
 python-dotenv
+email-validator

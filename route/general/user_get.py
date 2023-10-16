@@ -1,14 +1,43 @@
 from typing import Annotated
-from fastapi import APIRouter,HTTPException, Path,status
+from fastapi import APIRouter,HTTPException, Path,status,Form
 from dummydata import user_login , user_question_table , user_query_table
-from schemas import LoginOut , Question , Query
+from schemas import LoginOut , Question , Query, fourDigitCodeDisplay
+import random
+from database import db_dependency
+from Email import send_email
+from models import User
+from dummydata import four_digit_code_storage
+
+
 
 router = APIRouter(
     prefix="/users",
     tags=['general pages section']
 )
 
-api_key = "08956DV"
+
+
+
+@router.get('/get/four-digit-code/{email}')
+def retrieve_four_digit_code(db: db_dependency,  email : Annotated[str, Path(description="Enter Valid Email ID : ")]):
+    verify_email = db.query(User).filter(User.Email == email).first()
+    if not verify_email:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Invalid Email")
+    four_digit_code = str(random.randint(1000, 9999))
+    store = {
+        verify_email.Email : four_digit_code
+    }
+    four_digit_code_storage.append(store)
+    print(four_digit_code_storage)
+    msg = f"Your Four Digit Code : {four_digit_code}"
+    subject = "Reset Forgotten Password"
+    send_email(msg=msg,subject=subject)
+    return status.HTTP_200_OK
+    
+    
+
+
+
 
 
 

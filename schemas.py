@@ -6,6 +6,9 @@ from datetime import date
 
 # class UserDisplay(BaseModel):
 
+class fourDigitCodeDisplay(BaseModel):
+    code : str
+
 class LoginCredentials(BaseModel):
     username : str 
     password : str = Field(min_length=8)

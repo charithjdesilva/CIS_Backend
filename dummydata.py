@@ -16,6 +16,11 @@ criminals = []
 
 crimes = []
 
+four_digit_code_storage = []
+
+
+
+
 
 victims = [  
     {"crime_id": 12345,

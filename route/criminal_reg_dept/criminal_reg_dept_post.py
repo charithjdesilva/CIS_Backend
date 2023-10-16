@@ -5,7 +5,7 @@ from typing import Annotated
 import os
 from datetime import datetime
 
-from sqlalchemy import or_
+from sqlalchemy import or_,and_
 
 
 
@@ -292,16 +292,13 @@ async def register_suspect(
     
     img_url = None
 
-    if photo_criminal != common_criminal_image:
-        data = await photo_criminal.read()
-        name , extension = os.path.splitext(photo_criminal.filename)
+    if photo_suspect != common_suspect_image:
+        data = await photo_suspect.read()
+        name , extension = os.path.splitext(photo_suspect.filename)
         save_to = UPLOAD_SUSPECT / f"{SuspectID}{extension}"
         with open(save_to , 'wb') as f:
             f.write(data)
         img_url = make_image_url(str(save_to))
-
-    
-    
 
 
     criminal = Person(
@@ -329,10 +326,6 @@ async def register_suspect(
         PhotoPath = img_url
     )
 
-    photo_criminal = PersonPhoto(
-        PhotoID = SuspectID,
-        PersonID = SuspectID
-    )
 
     criminal_suspect = CriminalOrSuspect(
         InCustody = InCustody,
@@ -373,8 +366,9 @@ async def register_criminal(
     FirstName : Annotated[str, Form()],
     LastName : Annotated[str , Form()],
     InCustody : Annotated[bool, Form()],
+    add_to_crimes : Annotated[list[str],Form()],
+    SuspectID : Annotated[str , Form(description="Enter Suspect ID If person is already suspect")] = None,
     CrimeJustified : Annotated[bool , Form()] = True,
-    CrimeID : Annotated[list[str] , Form()] = [],
     NIC : Annotated[str , Form()] = None,
     PhoneNo : Annotated[str, Form()] = None,
     Province : Annotated[str , Form()] = None,
@@ -387,22 +381,29 @@ async def register_criminal(
     photo_criminal : UploadFile  =  common_criminal_image,
 ):
     
-    criminal_available = db.query(Person).filter(or_(Person.PersonID == CriminalID ,Person.NIC == NIC)).first()
+    flag = False
+    img_url = None
+    suspect_available = db.query(CriminalOrSuspect).filter(CriminalOrSuspect.PersonID == SuspectID).first() if SuspectID else None
+    suspect_person = None
+    suspect_Photo_server = None
+    crime_id_suspect = None
 
-    if criminal_available is None:
-        img_url = None
+    if suspect_available:
+        suspect_person = db.query(Person).filter((Person.PersonType == "Suspect")).filter(Person.PersonID == suspect_available.PersonID).first()
+        suspect_Photo_server = db.query(Photos).filter(Photos.PhotoType == "Suspect").filter(Photos.PhotoID == suspect_available.PersonID).first()
+        crime_id_suspect = suspect_available.PersonID if add_to_crimes is None else None
+        flag = True
 
-        if photo_criminal != common_criminal_image:
-            data = await photo_criminal.read()
-            name , extension = os.path.splitext(photo_criminal.filename)
-            save_to = UPLOAD_CRIMINAL / f"{CrimeID}{extension}"
-            with open(save_to , 'wb') as f:
-                f.write(data)
-            img_url = make_image_url(str(save_to))
-
-        criminal = Person(
-        CrimeID = CrimeID,
-        PersonID =  CrimeID,
+    if photo_criminal != common_criminal_image:
+        data = await photo_criminal.read()
+        name , extension = os.path.splitext(photo_criminal.filename)
+        save_to = UPLOAD_CRIMINAL / f"{CriminalID}{extension}"
+        with open(save_to , 'wb') as f:
+            f.write(data)
+        img_url = make_image_url(str(save_to))
+    
+    criminal = Person(    
+        PersonID =  CriminalID,
         NIC = NIC,
         FirstName = FirstName,
         LastName = LastName,
@@ -415,32 +416,215 @@ async def register_criminal(
         Area = Area,
         AdditionalDes = AdditionalDes,
         Landmark = Landmark,
-        HouseNoOrName =  HouseNoOrName
-
+        HouseNoOrName =  HouseNoOrName,
+        CrimeID = crime_id_suspect
         )
 
-        photo_sever = Photos(
-            PhotoID = CrimeID,
-            PhotoType = "Criminal",
-            PhotoPath = img_url
-        )
+    photo_sever = Photos(
+        PhotoID = CriminalID,
+        PhotoType = "Criminal",
+        PhotoPath = img_url
+    )
 
-        photo_criminal = PersonPhoto(
-            PhotoID = CriminalID,
-            PersonID = CriminalID
-        )
+    photo_criminal = PersonPhoto(
+        PhotoID = CriminalID,
+        PersonID = CriminalID
+    )
 
-        crime_criminal = CrimeCriminal(
-            PersonID = CriminalID,
-            CrimeID = CrimeID
-        )
 
-        criminal_suspect = CriminalOrSuspect(
-            InCustody = InCustody,
-            CrimeJustified = CrimeJustified,
-            NIC = NIC,
-            PersonID = CriminalID
-        )
+    criminal_suspect = CriminalOrSuspect(
+        InCustody = InCustody,
+        CrimeJustified = CrimeJustified,
+        NIC = NIC,
+        PersonID = CriminalID
+    )
+
+    
+    if flag:
+        if suspect_Photo_server.PhotoPath and suspect_available.PersonID in suspect_Photo_server.PhotoPath:
+            old_photo_filename = suspect_Photo_server.PhotoPath.split('/')[-1]
+            old_photo_path = UPLOAD_SUSPECT / old_photo_filename
+            if old_photo_path.exists():
+                old_photo_path.unlink()
+        
+        try:
+            db.delete(suspect_available)
+            db.commit()
+
+            db.delete(suspect_person)
+            db.commit()
+
+            db.delete(suspect_Photo_server)
+            db.commit()
+
+            
+        
+        except Exception as e :
+            error_message = str(e)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+    
+    try:
+        db.add(criminal)
+        db.commit()
+        db.refresh(criminal)
+
+        db.add(photo_sever)
+        db.commit()
+        db.refresh(photo_sever)
+
+        db.add(photo_criminal)
+        db.commit()
+        db.refresh(photo_criminal)
+
+        if add_to_crimes:
+            crime_ids = add_to_crimes[0].split(',')
+            print(crime_ids)
+            for add_crime in crime_ids:
+                # for key in add_crime.keys():
+                crime_criminal = CrimeCriminal(
+                    PersonID = CriminalID,
+                    CrimeID = add_crime
+                )
+                db.add(crime_criminal)
+                db.commit()
+                db.refresh(crime_criminal)
+        
+
+        db.add(criminal_suspect)
+        db.commit()
+        db.refresh(criminal_suspect)
+        
+
+        return {"message": "Suspect Registered Successfully"}
+    except Exception as e :
+        error_message = str(e)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+
+
+
+
+
+
+
+        
+
+
+        
+        
+
+    
+        # if suspect_available:
+        #     suspect_details = db.query(Person).filter(Person.PersonID == suspect_available.PersonID)
+        #     if suspect_details is None:
+        #         img_url = None
+
+        #         if photo_criminal != common_criminal_image:
+        #             data = await photo_criminal.read()
+        #             name , extension = os.path.splitext(photo_criminal.filename)
+        #             save_to = UPLOAD_CRIMINAL / f"{CrimeID}{extension}"
+        #             with open(save_to , 'wb') as f:
+        #                 f.write(data)
+        #             img_url = make_image_url(str(save_to))
+
+        #     criminal = Person(
+        #     CrimeID = CrimeID,
+        #     PersonID =  CrimeID,
+        #     NIC = NIC,
+        #     FirstName = FirstName,
+        #     LastName = LastName,
+        #     PhoneNo = PhoneNo,
+        #     PersonType = "Criminal",
+        #     LifeStatus = LifeStatus,
+        #     Province = Province,
+        #     District = District,
+        #     City = City,
+        #     Area = Area,
+        #     AdditionalDes = AdditionalDes,
+        #     Landmark = Landmark,
+        #     HouseNoOrName =  HouseNoOrName
+
+        #     )
+
+        #     photo_sever = Photos(
+        #         PhotoID = CrimeID,
+        #         PhotoType = "Criminal",
+        #         PhotoPath = img_url
+        #     )
+
+        #     photo_criminal = PersonPhoto(
+        #         PhotoID = CriminalID,
+        #         PersonID = CriminalID
+        #     )
+
+        #     crime_criminal = CrimeCriminal(
+        #         PersonID = CriminalID,
+        #         CrimeID = CrimeID
+        #     )
+
+        #     criminal_suspect = CriminalOrSuspect(
+        #         InCustody = InCustody,
+        #         CrimeJustified = CrimeJustified,
+        #         NIC = NIC,
+        #         PersonID = CriminalID
+        #     )
+        # else:
+
+            
+        
+
+
+        # if criminal_available is None:
+        #     img_url = None
+
+        #     if photo_criminal != common_criminal_image:
+        #         data = await photo_criminal.read()
+        #         name , extension = os.path.splitext(photo_criminal.filename)
+        #         save_to = UPLOAD_CRIMINAL / f"{CrimeID}{extension}"
+        #         with open(save_to , 'wb') as f:
+        #             f.write(data)
+        #         img_url = make_image_url(str(save_to))
+
+        #     criminal = Person(
+        #     CrimeID = CrimeID,
+        #     PersonID =  CrimeID,
+        #     NIC = NIC,
+        #     FirstName = FirstName,
+        #     LastName = LastName,
+        #     PhoneNo = PhoneNo,
+        #     PersonType = "Criminal",
+        #     LifeStatus = LifeStatus,
+        #     Province = Province,
+        #     District = District,
+        #     City = City,
+        #     Area = Area,
+        #     AdditionalDes = AdditionalDes,
+        #     Landmark = Landmark,
+        #     HouseNoOrName =  HouseNoOrName
+
+        #     )
+
+        #     photo_sever = Photos(
+        #         PhotoID = CrimeID,
+        #         PhotoType = "Criminal",
+        #         PhotoPath = img_url
+        #     )
+
+        #     photo_criminal = PersonPhoto(
+        #         PhotoID = CriminalID,
+        #         PersonID = CriminalID
+        #     )
+
+        #     crime_criminal = CrimeCriminal(
+        #         PersonID = CriminalID,
+        #         CrimeID = CrimeID
+        #     )
+
+        #     criminal_suspect = CriminalOrSuspect(
+        #         InCustody = InCustody,
+        #         CrimeJustified = CrimeJustified,
+        #         NIC = NIC,
+        #         PersonID = CriminalID
+        #     )
 
         try:
             db.add(criminal)
