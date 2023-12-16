@@ -5,6 +5,20 @@
 5. 
 
 
+
+
 forget password
 sms notification
 NIC Validation
+
+
+21/10/2023--------------------------------------
+
+Suspect becomes criminal
+
+new criminal without suspect
+
+Create new enpoint to update suspect to criminal
+
+
+

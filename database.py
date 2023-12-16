@@ -5,9 +5,24 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from typing import Annotated
 from fastapi import Depends
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 
-URL_DATABASE = 'mysql+pymysql://root:Samsung123_@localhost:3306/criminal_iden_system'
+import os
+
+DB_PASSWORD = os.getenv('DB_PASSWORD') #12345678
+DB_NAME  = os.getenv('DB_NAME') #database name
+DB_USER = os.getenv('DB_USER') #root
+DB_HOST = os.getenv('DB_HOST') #localhost
+DB_PORT = os.getenv('DB_PORT') #3306
+# print(DB_PASSWORD, DB_NAME, DB_USER)
+
+
+
+
+URL_DATABASE = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 engine = create_engine(URL_DATABASE)
 

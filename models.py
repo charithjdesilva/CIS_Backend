@@ -12,6 +12,7 @@ class User(Base):
     FirstName = Column(String(50), nullable=False)
     LastName = Column(String(50), nullable=False)
     Email = Column(String(500) , nullable=False)
+    Gender = Column(String(50),nullable=False)
     Tel_No = Column(String(12))
     Branch = Column(String(50))
     UserType = Column(String(15))
@@ -23,7 +24,7 @@ class User(Base):
     City = Column(String(50))
     Area = Column(String(200))
     HouseNoOrName = Column(String(100))
-    PasswordHash = Column(String(256))
+    PasswordHash = Column(String(256),nullable=False)
 
 
 
@@ -57,9 +58,10 @@ class Person(Base):
     __tablename__ = 'Person'
 
     PersonID = Column(String(100), primary_key=True)
-    NIC = Column(String(12))
+    NIC = Column(String(12),unique=True)
     FirstName = Column(String(50), nullable=False)
     LastName = Column(String(50), nullable=False)
+    Gender = Column(String(50),nullable=False)
     PhoneNo = Column(String(12))
     PersonType = Column(String(100))
     LifeStatus = Column(String(5))

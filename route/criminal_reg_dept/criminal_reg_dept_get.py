@@ -34,6 +34,20 @@ def get_all_crimes(db: db_dependency):
     return crime_list
 
 
+@router.get('/all/crimes_desc')
+def get_all_crimes(db: db_dependency):
+    crime_list = []
+    crimes = db.query(Crime).all()
+    crime_photos = db.query(Photos).filter(Photos.PhotoType == "Crime").all()
+    for index,crime in enumerate(crimes):
+        crime_data = {
+            crime.CrimeID : f"{crime.CrimeType} {crime.City} {crime.Area}"
+        }
+        crime_list.append(crime_data)
+    
+    return crime_list
+
+
 @router.get('/find/crime/{crime_id}')
 def get_crime_by_crimeid(db: db_dependency, crime_id: Annotated[str, Path(description="Enter Crime ID ")]):
     crime = db.query(Crime).filter(Crime.CrimeID == crime_id).first()
@@ -163,7 +177,7 @@ def get_criminal_by_crimeID_criminalID(db: db_dependency, id: Annotated[str, Pat
     
     criminal_sus = db.query(CriminalOrSuspect).filter(CriminalOrSuspect.PersonID.in_([criminal.PersonID for criminal in criminals])).all()
     
-    criminal_list = []
+    criminal_details = []
     
     for criminal, sus, photo in zip(criminals, criminal_sus, criminal_photos):
         criminal_data = {
@@ -172,6 +186,6 @@ def get_criminal_by_crimeID_criminalID(db: db_dependency, id: Annotated[str, Pat
             "CrimeJustified" : sus.CrimeJustified,
             "PhotoPath" : photo.PhotoPath
         }
-        criminal_list.append(criminal_data)
+        criminal_details.append(criminal_data)
     
-    return criminal_list
+    return criminal_details

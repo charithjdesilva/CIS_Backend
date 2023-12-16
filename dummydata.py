@@ -16,7 +16,9 @@ criminals = []
 
 crimes = []
 
-four_digit_code_storage = []
+four_digit_code_storage = [{
+    "this@gmail.com" : "1234"
+}]
 
 
 

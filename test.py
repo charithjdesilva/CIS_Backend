@@ -172,15 +172,24 @@
 #     return f"{base_url}/{file_path}"
 
 
-from urllib.parse import urlparse
-import os
+# from urllib.parse import urlparse
+# import os
 
-url = "http://127.0.0.1:8000/Images/crime_images/CR_2020_10_C3.jpg"
-parsed_url = urlparse(url)
-filename = os.path.basename(parsed_url.path)
+# url = "http://127.0.0.1:8000/Images/crime_images/CR_2020_10_C3.jpg"
+# parsed_url = urlparse(url)
+# filename = os.path.basename(parsed_url.path)
 
-print(filename)
-print(url.split('/')[-1])
+# print(filename)
+# print(url.split('/')[-1])
+
+# path = "Images\\users_image\\753951456V.jpeg"
+# corrected_path = path.replace('\\\\', '//')
+# print(corrected_path)
+
+
+path = "Images\\users_image\\753951456V.jpeg"
+converted_path = path.replace('\\', '/')
+print(converted_path)
 
 
 

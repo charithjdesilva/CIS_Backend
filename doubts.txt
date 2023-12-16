@@ -11,6 +11,11 @@ Doubt - Register Criminal and Suspect
 
 
 
+16/12
+
+1. Make table for query and question post in general section
+
+
 
 
 

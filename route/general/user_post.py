@@ -112,35 +112,43 @@ router = APIRouter(
 
 
 @router.post('/signIn')
-def do_signin(db: db_dependency,formdata : OAuth2PasswordRequestForm = Depends()):
+def signIn_process(db: db_dependency, formdata : OAuth2PasswordRequestForm = Depends()):
     user = db.query(User).filter(User.RegNo == formdata.username).first()
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Invalid crendentials")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Invalid username or password")
     
     if user:
         if verify_password(formdata.password, user.PasswordHash):
             return {"message" : "sign in successfully"}
         else:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Invalid crendentials")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Invalid username or password")
         
 
 @router.post('/forget-password/{email}')
-def do_forget_password(db: db_dependency, code : Annotated[str, Form()], email : Annotated[str , Path()]):
+def four_digit_code_process(db: db_dependency, code : Annotated[str, Form()], email : Annotated[str , Path()]):
     verify_user = db.query(User).filter(User.Email == email).first()
     print(four_digit_code_storage)
     if not verify_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Invalid Email")
     
+    
+    
     for item in four_digit_code_storage:
         for key,value in item.items():
             # print(key , value, key == verify_user.Email, code == value , {"code" : code}, {'value' : value})
+            print(key,verify_user.Email)
             if key == verify_user.Email:
+                print(code,value)
                 if code == value:
                     return status.HTTP_202_ACCEPTED
                 else:
                     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Invalid Code")
+        
+
     
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Code has not send to the email")
+
+
 
 @router.post('/reset-password/{id}')
 def do_reset_pswd(id : Annotated[str, Path(description="Enter email ID")],
@@ -180,6 +188,10 @@ def post_queries(user_query : Query):
         return status.HTTP_200_OK
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="invalid question")
+    
+
+print("User query table",user_query_table)
+print("User question table",user_question_table)
 
 
 

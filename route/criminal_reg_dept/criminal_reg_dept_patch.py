@@ -10,7 +10,8 @@ from datetime import datetime
 from dummydata import victims,crimes,evidences,criminals
 from Security.password import is_valid_password
 from Images.path import UPLOAD_CRIME, UPLOAD_VICTIM, UPLOAD_EVIDENCE, UPLOAD_CRIMINAL
-from Images.path import common_crime_image,common_criminal_image,common_evidence_image,common_victim_image
+from Images.path import common_image
+from Images.image_upload import  update_crime_image , update_victim_image , update_evidence_image
 from models import Crime,Photos,CrimePhoto,Person,PersonPhoto,Evidence,EvidencePhoto,CriminalOrSuspect,CrimeCriminal
 from database import db_dependency
 
@@ -42,7 +43,7 @@ async def update_crime(
     Landmarks : Annotated[str, Form()] = None,
     HouseNoOrName : Annotated[str , Form()] = None,
     testimonials : Annotated[str , Form()] = None,
-    photos_crime : UploadFile  = common_crime_image,
+    photos_crime : UploadFile  = common_image,
 ):
     crime = db.query(Crime).filter(Crime.CrimeID == id).first()
 
@@ -87,23 +88,8 @@ async def update_crime(
     if testimonials is not None:
         crime.Testimonials = testimonials    
 
-        
-    if photos_crime != common_crime_image:
-        data = await photos_crime.read()
-        name, extension = os.path.splitext(photos_crime.filename)
-        new_photo_filename = f"{crime.CrimeID}{extension}"
-        new_photo_path = UPLOAD_CRIME / new_photo_filename
-
-        if crime_photo.PhotoPath and crime.CrimeID in crime_photo.PhotoPath:
-            # If it contains, construct the old photo path and delete it
-            old_photo_filename = crime_photo.PhotoPath.split('/')[-1]
-            old_photo_path = UPLOAD_CRIME / old_photo_filename
-            if old_photo_path.exists():
-                old_photo_path.unlink()
-        
-        with open(new_photo_path, 'wb') as f:
-            f.write(data)
-        crime_photo.PhotoPath = make_image_url(str(new_photo_path))
+    if photos_crime != common_image:
+        crime_photo.PhotoPath = await update_crime_image(photos_crime,UPLOAD_CRIME,crime,crime_photo)
 
 
     db.commit()
@@ -121,6 +107,7 @@ async def update_victim(
     FirstName : Annotated[str , Form()] = None,
     LastName : Annotated[str, Form()] = None,
     NIC : Annotated[str, Form()] = None,
+    Gender : Annotated[str, Form(description="Enter Male or Female")] = None,
     LifeStatus : Annotated[str, Form()] = None,
     PhoneNo : Annotated[str, Form()] = None,
     Province : Annotated[str, Form()] = None,
@@ -130,7 +117,7 @@ async def update_victim(
     Landmark : Annotated[str|None, Form()] = None,
     HouseNoOrName : Annotated[str , Form()] = None,
     AdditionalDes : Annotated[str|None , Form()] = None,
-    photos_victim : UploadFile  = common_victim_image,
+    photos_victim : UploadFile  = common_image,
 ):
     victim_details = db.query(Person).filter(Person.PersonID == victim_id).first()
 
@@ -143,24 +130,8 @@ async def update_victim(
     
     victim_photo = db.query(Photos).filter(Photos.PhotoID == victim_details.PersonID).first()
 
-    
-
-
-    if photos_victim != common_victim_image:
-        data = await photos_victim.read()
-        name, extension = os.path.splitext(photos_victim.filename)
-        new_photo_filename = f"{victim_details.PersonID}{extension}"
-        new_photo_path = UPLOAD_VICTIM / new_photo_filename
-
-        if victim_photo.PhotoPath and victim_details.PersonID in victim_photo.PhotoPath:
-            old_photo_filename = victim_photo.PhotoPath.split('/')[-1]
-            old_photo_path = UPLOAD_VICTIM / old_photo_filename
-            if old_photo_path.exists():
-                old_photo_path.unlink()
-        
-        with open(new_photo_path, 'wb') as f:
-            f.write(data)
-        victim_photo.PhotoPath = make_image_url(str(new_photo_path))
+    if photos_victim != common_image:
+        victim_photo.PhotoPath = await update_victim_image(photos_victim,UPLOAD_VICTIM,victim_photo)
     
 
     if CrimeID is not None:
@@ -171,6 +142,9 @@ async def update_victim(
     
     if LastName is not None:
         victim_details.LastName = LastName
+
+    if Gender is not None:
+        victim_details.Gender = Gender
 
     if NIC is not None:
         victim_details.NIC = NIC
@@ -214,7 +188,7 @@ async def update_evidence(
     db : db_dependency,
     evidence_id : Annotated[str , Path(description="Enter evidence id ")],
     CrimeID : Annotated[str , Form()] = None,
-    photo_of_evidence : UploadFile  = common_evidence_image,
+    photo_of_evidence : UploadFile  = common_image,
     Testimonials : Annotated[str | None, Form()] = None,
 ):
     evidence_details = db.query(Evidence).filter(Evidence.EvidenceID == evidence_id).first()
@@ -228,21 +202,24 @@ async def update_evidence(
     
     evidence_photo = db.query(Photos).filter(Photos.PhotoID == evidence_details.EvidenceID).first()
 
-    if photo_of_evidence != common_evidence_image:
-        data = await photo_of_evidence.read()
-        name, extension = os.path.splitext(photo_of_evidence.filename)
-        new_photo_filename = f"{evidence_details.EvidenceID}{extension}"
-        new_photo_path = UPLOAD_EVIDENCE / new_photo_filename
+    # if photo_of_evidence != common_image:
+    #     data = await photo_of_evidence.read()
+    #     name, extension = os.path.splitext(photo_of_evidence.filename)
+    #     new_photo_filename = f"{evidence_details.EvidenceID}{extension}"
+    #     new_photo_path = UPLOAD_EVIDENCE / new_photo_filename
 
-        if evidence_photo.PhotoPath and evidence_details.EvidenceID in evidence_photo.PhotoPath:
-            old_photo_filename = evidence_photo.PhotoPath.split('\\')[-1]
-            old_photo_path = UPLOAD_EVIDENCE / old_photo_filename
-            if old_photo_path.exists():
-                old_photo_path.unlink()
+    #     if evidence_photo.PhotoPath and evidence_details.EvidenceID in evidence_photo.PhotoPath:
+    #         old_photo_filename = evidence_photo.PhotoPath.split('\\')[-1]
+    #         old_photo_path = UPLOAD_EVIDENCE / old_photo_filename
+    #         if old_photo_path.exists():
+    #             old_photo_path.unlink()
         
-        with open(new_photo_path, 'wb') as f:
-            f.write(data)
-        evidence_photo.PhotoPath = make_image_url(str(new_photo_path))
+    #     with open(new_photo_path, 'wb') as f:
+    #         f.write(data)
+    #     evidence_photo.PhotoPath = make_image_url(str(new_photo_path))
+
+    if photo_of_evidence != common_image:
+        evidence_photo.PhotoPath = await update_evidence_image(photo_of_evidence,UPLOAD_EVIDENCE,evidence_details,evidence_photo)
     
     if CrimeID is not None:
         evidence_details.CrimeID = CrimeID
@@ -260,13 +237,14 @@ async def update_evidence(
 @router.patch('/update/CriminalOrSuspect/{criminal_id:path}')
 async def register_crim_suspect(
     db : db_dependency,
-    criminal_id : Annotated[str, Path(description="Enter Criminal ID")],
+    PersonID : Annotated[str, Path(description="Enter Criminal ID")],
     CrimeID : Annotated[str , Form()] = None,
     LifeStatus : Annotated[str , Form()] = None,
     InCustody : Annotated[bool, Form()] = None,
     CrimeJustified : Annotated[bool , Form()] = None,
     FirstName : Annotated[str, Form()] = None,
     LastName : Annotated[str , Form()] = None,
+    Gender : Annotated[str, Form(description="Enter Male or Female")]=None,
     NIC : Annotated[str , Form()] = None,
     PhoneNo : Annotated[str, Form()] = None,
     Province : Annotated[str , Form()] = None,
@@ -276,10 +254,10 @@ async def register_crim_suspect(
     Landmark : Annotated[str , Form()]= None,
     AdditionalDes : Annotated[str, Form()] = None,
     HouseNoOrName : Annotated[str , Form()] = None,
-    photo_criminal : UploadFile  =  common_criminal_image,
+    photo_criminal : UploadFile  =  common_image,
 ):
-    criminal_person = db.query(Person).filter(Person.PersonID == criminal_id).first()
-    criminal_sus = db.query(CriminalOrSuspect).filter(CriminalOrSuspect.PersonID == criminal_id).first()
+    criminal_person = db.query(Person).filter(Person.PersonID == PersonID).first()
+    criminal_sus = db.query(CriminalOrSuspect).filter(CriminalOrSuspect.PersonID == PersonID).first()
 
     if criminal_person and criminal_sus:
         criminal_sus_photo = db.query(Photos).filter(Photos.PhotoID == criminal_person.PersonID).first()
@@ -290,7 +268,7 @@ async def register_crim_suspect(
     
     criminal_sus_photo = db.query(Photos).filter(Photos.PhotoID == criminal_person.PersonID).first()
 
-    if photo_criminal != common_criminal_image:
+    if photo_criminal != common_image:
         data = await photo_criminal.read()
         name, extension = os.path.splitext(photo_criminal.filename)
         new_photo_filename = f"{criminal_person.PersonID}{extension}"
@@ -323,6 +301,9 @@ async def register_crim_suspect(
     
     if LastName is not None:
         criminal_person.LastName = LastName
+    
+    if Gender is not None:
+        criminal_person.Gender = Gender
     
     if NIC is not None:
         criminal_person.NIC = NIC
