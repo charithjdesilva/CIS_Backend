@@ -94,6 +94,7 @@ class CrimeCriminal(Base):
 class Photos(Base):
     __tablename__ = 'Photos'
 
+    # PhotoID = Column(String(110), primary_key=True)
     PhotoID = Column(String(110), primary_key=True)
     PhotoType = Column(String(100))
     PhotoPath = Column(String(250))

@@ -187,9 +187,114 @@
 # print(corrected_path)
 
 
-path = "Images\\users_image\\753951456V.jpeg"
-converted_path = path.replace('\\', '/')
-print(converted_path)
+# path = "Images\\users_image\\753951456V.jpeg"
+# converted_path = path.replace('\\', '/')
+# print(converted_path)
+
+text = "http://127.0.0.1:8000/Images/crime_images/CR_2021_08_14_C1_1.jpeg~http://127.0.0.1:8000/Images/crime_images/CR_2021_08_14_C1_2.jpeg~"
+
+l1 = text.split("~")
+
+print(l1)
+
+print("CR_2021_08_14_C1" in  "http://127.0.0.1:8000/Images/crime_images/CR_2021_08_14_C1_1.jpeg~http://127.0.0.1:8000/Images/crime_images/CR_2021_08_14_C1_2.jpeg~")
+
+
+
+
+
+# @router.post('/register/crime/multiple_photos')
+# async def register_crime_with_multiple_photos(
+#     db: db_dependency,
+#     CrimeID: Annotated[str, Form()],
+#     CrimeType: Annotated[str, Form()],
+#     CrimeDate: Annotated[str, Form()],
+#     CrimeTime: Annotated[str, Form()],
+#     Province: Annotated[str, Form()],
+#     District: Annotated[str, Form()],
+#     City: Annotated[str, Form()],
+#     Area: Annotated[str, Form()],
+#     Landmarks: Annotated[str, Form()] = None,
+#     HouseNoOrName: Annotated[str, Form()] = None,
+#     testimonials: Annotated[str, Form()] = None,
+#     photos_crime: List[UploadFile] = File(...)
+# ):
+#     if CrimeDate:
+#         joined_date = datetime.strptime(CrimeDate, '%Y-%m-%d')
+#     else:
+#         joined_date = None
+
+#     img_url = ""
+
+#     crime = Crime(
+#         CrimeID=CrimeID,
+#         CrimeType=CrimeType,
+#         CrimeDate=joined_date,
+#         CrimeTime=CrimeTime,
+#         Province=Province,
+#         District=District,
+#         City=City,
+#         Area=Area,
+#         HouseNoOrName=HouseNoOrName,
+#         Landmarks=Landmarks,
+#         Testimonials=testimonials
+#     )
+
+#     try:
+#         db.add(crime)
+#         db.commit()
+#         db.refresh(crime)
+
+        
+#     except Exception as e:
+#         error_message = str(e)
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+
+
+#     for index,photo in enumerate(photos_crime):
+#             upload_img_url = await upload_image_with_multiple_photos(photo, CrimeID, UPLOAD_CRIME,index) 
+#             img_url = upload_img_url 
+#             photo = Photos(
+#                 PhotoID=f"{CrimeID}%{index}",
+#                 PhotoType="Crime",
+#                 PhotoPath=img_url
+#             )
+
+#             try:
+#                 db.add(photo)
+#                 db.commit()
+#                 db.refresh(photo)
+        
+#             except Exception as e:
+#                 error_message = str(e)
+#                 raise HTTPException(
+#                     status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+
+#             crime_photo = CrimePhoto(
+#                 PhotoID=f"{CrimeID}%{index}",
+#                 CrimeID=CrimeID
+#             ) 
+
+#             try:
+#                 db.add(crime_photo)
+#                 db.commit()
+#                 db.refresh(crime_photo)
+
+        
+#             except Exception as e:
+#                 error_message = str(e)
+#                 raise HTTPException(
+#                     status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+            
+
+#     return status.HTTP_201_CREATED
+
+
+t1 = "20231217003%1.jpeg"
+
+print(t1.split(".")[0])
+
 
 
 

@@ -43,7 +43,8 @@ def get_user(db : db_dependency, username: str):
             "email" : user.Email,
             "full_name" : f"{user.FirstName} {user.LastName}",
             "hashed_password" : user.PasswordHash,
-            "type" : user.UserType
+            "type" : user.UserType,
+            "position" : user.Position
         }
 
    
@@ -67,6 +68,87 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 
 
+async def get_current_user_IT_Officer(db: db_dependency,token: Annotated[str, Depends(oauth2_scheme)]):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        expires = payload.get("exp")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    user = get_user(db, username=username)
+    if user is None or user["type"] != "ITOfficer":
+        raise credentials_exception
+    return user
+
+
+async def get_current_user_CRD(db: db_dependency,token: Annotated[str, Depends(oauth2_scheme)]):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        expires = payload.get("exp")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    user = get_user(db, username=username)
+    if user is None or user["type"] != "CriminalRegDept":
+        raise credentials_exception
+    return user
+
+async def get_current_user_CRD_admin(db: db_dependency,token: Annotated[str, Depends(oauth2_scheme)]):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        expires = payload.get("exp")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    user = get_user(db, username=username)
+    if user is None or user["type"] != "CriminalRegDept" or user["position"] != "Admin_Officer" :
+        raise credentials_exception
+    return user
+
+async def get_current_user_Police_Officer(db: db_dependency,token: Annotated[str, Depends(oauth2_scheme)]):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        expires = payload.get("exp")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    user = get_user(db, username=username)
+    if user is None or user["type"] != "PoliceOfficer":
+        raise credentials_exception
+    return user
+
+
+
+
+
 async def get_current_user(db: db_dependency,token: Annotated[str, Depends(oauth2_scheme)]):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -85,6 +167,7 @@ async def get_current_user(db: db_dependency,token: Annotated[str, Depends(oauth
     if user is None:
         raise credentials_exception
     return user
+
 
 async def get_current_active_user(
     current_user: Annotated[UserIn, Depends(get_current_user)]

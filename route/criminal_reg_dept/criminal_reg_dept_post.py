@@ -14,7 +14,7 @@ from Images.path import UPLOAD_CRIME, UPLOAD_VICTIM, UPLOAD_EVIDENCE, UPLOAD_CRI
 from Images.path import common_image
 from models import Crime, Photos, CrimePhoto, Person, PersonPhoto, Evidence, EvidencePhoto, CriminalOrSuspect, CrimeCriminal
 from database import db_dependency
-from Images.image_upload import upload_image
+from Images.image_upload import upload_image, upload_image_with_multiple_photos
 
 
 router = APIRouter(
@@ -54,7 +54,6 @@ async def register_crime(
     Landmarks: Annotated[str, Form()] = None,
     HouseNoOrName: Annotated[str, Form()] = None,
     testimonials: Annotated[str, Form()] = None,
-    # photos_crime: List[UploadFile] = File(...)
     photos_crime: UploadFile = common_image,
 ):
     if CrimeDate:
@@ -118,6 +117,106 @@ async def register_crime(
 
 
 # ---------------------------------------------------------------------------------------------------------------
+    
+# Register Crime
+@router.post('/register/crime/multiple_photos')
+async def register_crime_with_multiple_photos(
+    db: db_dependency,
+    CrimeID: Annotated[str, Form()],
+    CrimeType: Annotated[str, Form()],
+    CrimeDate: Annotated[str, Form()],
+    CrimeTime: Annotated[str, Form()],
+    Province: Annotated[str, Form()],
+    District: Annotated[str, Form()],
+    City: Annotated[str, Form()],
+    Area: Annotated[str, Form()],
+    Landmarks: Annotated[str, Form()] = None,
+    HouseNoOrName: Annotated[str, Form()] = None,
+    testimonials: Annotated[str, Form()] = None,
+    photos_crime: List[UploadFile] = File(...)
+):
+    if CrimeDate:
+        joined_date = datetime.strptime(CrimeDate, '%Y-%m-%d')
+    else:
+        joined_date = None
+
+    img_url = ""
+
+    crime = Crime(
+        CrimeID=CrimeID,
+        CrimeType=CrimeType,
+        CrimeDate=joined_date,
+        CrimeTime=CrimeTime,
+        Province=Province,
+        District=District,
+        City=City,
+        Area=Area,
+        HouseNoOrName=HouseNoOrName,
+        Landmarks=Landmarks,
+        Testimonials=testimonials
+    )
+
+    try:
+        db.add(crime)
+        db.commit()
+        db.refresh(crime)
+
+        
+    except Exception as e:
+        error_message = str(e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+
+
+    for index,photo in enumerate(photos_crime):
+            upload_img_url = await upload_image_with_multiple_photos(photo, CrimeID, UPLOAD_CRIME,index) 
+            img_url = upload_img_url 
+            photo = Photos(
+                PhotoID=f"{CrimeID}%{index}",
+                PhotoType="Crime",
+                PhotoPath=img_url
+            )
+
+            try:
+                db.add(photo)
+                db.commit()
+                db.refresh(photo)
+        
+            except Exception as e:
+                error_message = str(e)
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+
+            crime_photo = CrimePhoto(
+                PhotoID=f"{CrimeID}%{index}",
+                CrimeID=CrimeID
+            ) 
+
+            try:
+                db.add(crime_photo)
+                db.commit()
+                db.refresh(crime_photo)
+
+        
+            except Exception as e:
+                error_message = str(e)
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+            
+
+    return status.HTTP_201_CREATED
+
+    
+
+
+
+
+
+
+
+
+# ---------------------------------------------------------------------------------------------------------------
+
 
 
 # Register Victim
@@ -202,6 +301,134 @@ async def register_victim(
         error_message = str(e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+    
+
+
+@router.post('/register-victim/multiple_photos')
+async def register_victim_with_multiple_photos(
+    db: db_dependency,
+    VictimID: Annotated[str, Form()],
+    CrimeID: Annotated[str, Form()],
+    FirstName: Annotated[str, Form()],
+    LastName: Annotated[str, Form()],
+    Gender: Annotated[str, Form(description="Enter Male or Female")],
+    NIC: Annotated[str, Form()] = None,
+    LifeStatus: Annotated[str, Form()] = None,
+    PhoneNo: Annotated[str, Form()] = None,
+    Province: Annotated[str, Form()] = None,
+    District: Annotated[str, Form()] = None,
+    City: Annotated[str, Form()] = None,
+    Area: Annotated[str, Form()] = None,
+    Landmark: Annotated[str | None, Form()] = None,
+    HouseNoOrName: Annotated[str, Form()] = None,
+    AdditionalDes: Annotated[str | None, Form()] = None,
+    photos_victim: List[UploadFile] = File(...),
+):
+
+    victim = Person(
+        PersonID=VictimID,
+        CrimeID=CrimeID,
+        NIC=NIC,
+        FirstName=FirstName,
+        LastName=LastName,
+        PhoneNo=PhoneNo,
+        Gender=Gender,
+        PersonType="Victim",
+        LifeStatus=LifeStatus,
+        Province=Province,
+        District=District,
+        City=City,
+        Area=Area,
+        AdditionalDes=AdditionalDes,
+        Landmark=Landmark,
+        HouseNoOrName=HouseNoOrName,
+    )
+
+    try:
+        db.add(victim)
+        db.commit()
+        db.refresh(victim)
+
+        
+    except Exception as e:
+        error_message = str(e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+    
+
+    for index,photo in enumerate(photos_victim):
+            upload_img_url = await upload_image_with_multiple_photos(photo, VictimID, UPLOAD_VICTIM,index) 
+            img_url = upload_img_url 
+            photo = Photos(
+                PhotoID=f"{VictimID}%{index}",
+                PhotoType="Victim",
+                PhotoPath=img_url
+            )
+
+            try:
+                db.add(photo)
+                db.commit()
+                db.refresh(photo)
+        
+            except Exception as e:
+                error_message = str(e)
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+
+            victim_photo = PersonPhoto(
+                PhotoID=f"{VictimID}%{index}",
+                PersonID=VictimID
+            ) 
+
+            try:
+                db.add(victim_photo)
+                db.commit()
+                db.refresh(victim_photo)
+
+        
+            except Exception as e:
+                error_message = str(e)
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+            
+
+    return status.HTTP_201_CREATED
+    
+
+
+    # photo_all = Photos(
+    #     PhotoID=VictimID,
+    #     PhotoType="Victim",
+    #     PhotoPath=img_url
+    # )
+
+    # person_photo = PersonPhoto(
+    #     PhotoID=VictimID,
+    #     PersonID=VictimID
+    # )
+
+    # try:
+    #     db.add(victim)
+    #     db.commit()
+    #     db.refresh(victim)
+
+    #     db.add(photo_all)
+    #     db.commit()
+    #     db.refresh(photo_all)
+
+    #     db.add(person_photo)
+    #     db.commit()
+    #     db.refresh(person_photo)
+
+    #     return {"message": "Victim Registered Successfully"}
+    # except Exception as e:
+    #     error_message = str(e)
+    #     raise HTTPException(
+    #         status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+
+    
+
+#---------------------------------------------------------------------------------------------
 
 
 # register evidence
@@ -226,6 +453,68 @@ async def register_evidence(
 
     if photo_of_evidence != common_image:
         img_url = await upload_image(photo_of_evidence, EvidenceID, UPLOAD_EVIDENCE)
+
+    evidence_details = Evidence(
+        EvidenceID=EvidenceID,
+        Testimonials=Testimonials,
+        CrimeID=CrimeID
+    )
+
+    photo_all = Photos(
+        PhotoID=EvidenceID,
+        PhotoType="Evidence",
+        PhotoPath=img_url
+    )
+
+    evidence_photo = EvidencePhoto(
+        PhotoID=EvidenceID,
+        EvidenceID=EvidenceID
+    )
+
+    try:
+        db.add(evidence_details)
+        db.commit()
+        db.refresh(evidence_details)
+
+        db.add(photo_all)
+        db.commit()
+        db.refresh(photo_all)
+
+        db.add(evidence_photo)
+        db.commit()
+        db.refresh(evidence_photo)
+
+        return {"message": "Evidence Registered Successfully"}
+    except Exception as e:
+        error_message = str(e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+    
+
+@router.post('/register-evidence/multiple_photos')
+async def register_evidence(
+    db: db_dependency,
+    CrimeID: Annotated[str, Form()],
+    EvidenceID: Annotated[str, Form()],
+    photo_of_evidence: List[UploadFile] = File(...),
+    Testimonials: Annotated[str | None, Form()] = None,
+):
+    img_url = None
+
+    # if photo_of_evidence != common_image:
+    #     data = await photo_of_evidence.read()
+    #     name , extension = os.path.splitext(photo_of_evidence.filename)
+    #     save_to = UPLOAD_EVIDENCE / f"{EvidenceID}{extension}"
+    #     with open(save_to , 'wb') as f:
+    #         f.write(data)
+    #     img_url = make_image_url(str(save_to))
+
+    # if photo_of_evidence != common_image:
+    #     img_url = await upload_image(photo_of_evidence, EvidenceID, UPLOAD_EVIDENCE)
+
+    for index,photo in enumerate(photo_of_evidence):
+            upload_img_url = await upload_image_with_multiple_photos(photo, EvidenceID, UPLOAD_EVIDENCE,index+1) 
+            img_url += upload_img_url + "~"
 
     evidence_details = Evidence(
         EvidenceID=EvidenceID,
@@ -288,10 +577,14 @@ async def register_suspect(
     photo_suspect: UploadFile = common_image,
 ):
 
-    img_url = None
+    img_url = ""
 
-    if photo_suspect != common_image:
-        img_url = await upload_image(photo_suspect, CrimeID, UPLOAD_SUSPECT)
+    # if photos_crime != common_image:
+    #     img_url = await upload_image(photos_crime, CrimeID, UPLOAD_CRIME)
+
+    for index,photo in enumerate(photo_suspect):
+            upload_img_url = await upload_image_with_multiple_photos(photo, PersonID, UPLOAD_VICTIM,index+1) 
+            img_url += upload_img_url + "~"
 
     criminal = Person(
         CrimeID=CrimeID,

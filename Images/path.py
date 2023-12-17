@@ -7,6 +7,7 @@ UPLOAD_EVIDENCE = Path('Images/evidence_images/')
 UPLOAD_CRIMINAL = Path('Images/criminal_images/')
 UPLOAD_USER = Path('Images/users_image/')
 UPLOAD_SUSPECT = Path('Images/suspect_images/')
+UPLOAD_CRIME_VIDEOS = Path("Images/crime_videos")
 
 
 

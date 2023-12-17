@@ -29,6 +29,16 @@ async def upload_image(Photo : UploadFile, Id : str, filePath : pathlib.Path):
     # print(save_to)
     return make_image_url(str(save_to))
 
+
+async def upload_image_with_multiple_photos(Photo : UploadFile, Id : str, filePath : pathlib.Path, index : int):
+    data = await Photo.read()
+    name , extension = os.path.splitext(Photo.filename)
+    save_to = filePath / f"{Id}%{index}{extension}"
+    with open(save_to , 'wb') as f:
+        f.write(data)
+    # print(save_to)
+    return make_image_url(str(save_to))
+
 async def update_user_image(Photo : UploadFile, filePath : pathlib.Path, user: User):
     data = await Photo.read()
     name, extension = os.path.splitext(Photo.filename)
@@ -54,7 +64,9 @@ async def update_crime_image(Photo : UploadFile, filePath : pathlib.Path, crime:
     new_photo_filename = f"{crime.CrimeID}{extension}"
     new_photo_path = filePath / new_photo_filename
 
-    if photo_obj.PhotoPath and crime.CrimeID in photo_obj.PhotoPath:
+    print(photo_obj.PhotoPath," ",crime.CrimeID," ",crime.CrimeID in photo_obj.PhotoPath)
+
+    if photo_obj.PhotoPath and (crime.CrimeID in photo_obj.PhotoPath):
         # If it contains, construct the old photo path and delete it
         old_photo_filename = photo_obj.PhotoPath.split('/')[-1]
         old_photo_path = filePath / old_photo_filename
@@ -64,6 +76,8 @@ async def update_crime_image(Photo : UploadFile, filePath : pathlib.Path, crime:
     with open(new_photo_path, 'wb') as f:
         f.write(data)
     return make_image_url(str(new_photo_path))
+
+
 
 
 
@@ -98,3 +112,7 @@ async def update_evidence_image(Photo : UploadFile, filePath : pathlib.Path, evi
     with open(new_photo_path, 'wb') as f:
         f.write(data)
     return make_image_url(str(new_photo_path))    
+
+
+
+

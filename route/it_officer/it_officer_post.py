@@ -17,13 +17,13 @@ from Images.image_upload import upload_image, update_user_image
 from models import User
 from Security.password import do_hash_password
 from models import Crime, Photos, CrimePhoto, Person, PersonPhoto, Evidence, EvidencePhoto, CriminalOrSuspect, CrimeCriminal
-from auth import get_current_active_user
+from auth import get_current_user_CRD, get_current_user_IT_Officer,get_current_user_Police_Officer, get_current_user_CRD_admin
 
 
 router = APIRouter(
     prefix="/it-officer",
     tags=['IT Officer Section'],
-    # dependencies=[Depends(get_current_active_user)]
+    # dependencies=[Depends(get_current_user_CRD_admin)]
 )
 
 base_url = "http://127.0.0.1:8000"
@@ -42,7 +42,8 @@ def make_image_url(file_path : str):
     return url
 
 
-@router.post('/register-user', description="Register User")
+# @router.post('/register-user/by_CRD', description="Register all types of  User by CRD", dependencies=[Depends(get_current_user_CRD)])
+@router.post('/register-user/by_CRD', description="Register all types of  User by CRD")
 async def create_user(
     db: db_dependency,
     UserType: Annotated[str, Form(description="CriminalRegDept, ITOfficer, PoliceOfficer")],
@@ -108,6 +109,85 @@ async def create_user(
         error_message = str(e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+    
+
+
+# -------------------------------------------------------------------------------------------
+    
+
+@router.post('/register-user/by_ITOfficer', description="Register ITOfficer and PoliceOfficer by ITOfficer", dependencies=[Depends(get_current_user_IT_Officer)])
+async def create_user(
+    db: db_dependency,
+    UserType: Annotated[str, Form(description="CriminalRegDept, ITOfficer, PoliceOfficer")],
+    RegNo: Annotated[str, Form()],
+    NIC: Annotated[str, Form()],
+    FirstName: Annotated[str, Form()],
+    LastName: Annotated[str, Form()],
+    Gender: Annotated[str, Form(description="Enter Male or Female")],
+    Email: Annotated[str, Form()],
+    Password: Annotated[str, Form(
+        min_length=8, max_length=256, description="Default dummy password included, if not include password")] = "12345678",
+    Tel_No: Annotated[str, Form(
+        description="can be maximum 10 characters")] = None,
+    Branch: Annotated[str, Form(
+        description=" branch can be null because, some times a user cannot be associated with a branch such as while training")] = None,
+    Province: Annotated[str, Form()] = None,
+    District: Annotated[str, Form()] = None,
+    City: Annotated[str, Form()] = None,
+    Area: Annotated[str, Form()] = None,
+    Position: Annotated[str, Form()] = None,
+    HouseNoOrName: Annotated[str, Form()] = None,
+    JoinedDate: Annotated[str, Form(
+        description="Enter YYYY-MM-DD Format")] = None,
+    Photo: UploadFile = common_image,
+
+):
+    joined_date = date_modification(JoinedDate)
+
+    save_to = None
+
+    if Photo != common_image:
+        save_to = await upload_image(Photo, NIC, UPLOAD_USER)
+
+    hashed_password = do_hash_password(Password)
+
+    user = User(
+        RegNo=RegNo,
+        NIC=NIC,
+        FirstName=FirstName,
+        LastName=LastName,
+        Gender=Gender,
+        Tel_No=Tel_No,
+        Branch=Branch,
+        Email=Email,
+        UserType=UserType,
+        JoinedDate=joined_date,
+        Position=Position,
+        Province=Province,
+        District=District,
+        City=City,
+        Area=Area,
+        HouseNoOrName=HouseNoOrName,
+        PasswordHash=hashed_password,
+        Photo=save_to
+    )
+
+    try:
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        return {"message": "User created successfully"}
+    except Exception as e:
+        error_message = str(e)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+    
+
+
+
+
+
+# -------------------------------------------------------------------------------------------
 
 
 @router.patch('/update-user/{id:path}', description="Only update the relevant fields ")

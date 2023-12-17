@@ -1,4 +1,6 @@
-from fastapi import FastAPI,Depends
+import os
+import pathlib
+from fastapi import FastAPI,Depends, UploadFile ,APIRouter
 from fastapi.staticfiles import StaticFiles
 import models
 from database import engine, SessionLocal
@@ -9,9 +11,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from route.general import user_post,user_get
 from route.police_officer import police_post,police_get
 from route.it_officer import it_officer_post,it_officer_get
-from route.criminal_reg_dept import criminal_reg_dept_get,criminal_reg_dept_post, uploadCriminalPhoto, recognizeSuspect, recognizeMultipleSuspects 
+from route.criminal_reg_dept import criminal_reg_dept_get,criminal_reg_dept_post, uploadCriminalPhoto, recognizeSuspect, recognizeMultipleSuspects, criminal_reg_dept_delete 
 from route.criminal_reg_dept import criminal_reg_dept_patch
 import auth
+from Images.path import UPLOAD_CRIME_VIDEOS
+from auth import get_current_user_CRD_admin
 
 
 
@@ -28,7 +32,9 @@ app = FastAPI(title="AI Based Criminal Identification System to Sri Lankan Polic
     license_info={
         "name": "Apache 2.0",
         "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
-    },)
+    },
+    # dependencies=[Depends(get_current_user_CRD_admin)],
+    )
 
 origins = [
     'http://localhost:3000'
@@ -55,11 +61,9 @@ app.include_router(it_officer_get.router)
 app.include_router(criminal_reg_dept_get.router)
 app.include_router(criminal_reg_dept_post.router)
 app.include_router(criminal_reg_dept_patch.router)
+app.include_router(criminal_reg_dept_delete.router)
 
 app.include_router(auth.router)
-
-
-
 
 app.include_router(uploadCriminalPhoto.router)
 app.include_router(recognizeSuspect.router)
@@ -86,6 +90,18 @@ app.mount("/Images/evidence_images", StaticFiles(directory="Images/evidence_imag
 @app.get("/hello")
 def show():
     return {"message" : "hello world"}
+
+# @app.post("/post-video")
+# async def upload_video(video: UploadFile):
+#     data = await video.read()
+#     name, extension = os.path.splitext(video.filename)
+#     save_to = UPLOAD_CRIME_VIDEOS / f"{video.filename}{extension}"
+    
+#     with open(save_to, 'wb') as f:
+#         f.write(data)
+    
+#     return "okay"
+
 
 
 # env\Scripts\activate.bat
